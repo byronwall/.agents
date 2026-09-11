@@ -1,0 +1,4 @@
+interface:
+  display_name: "Token Use Diagnosis"
+  short_description: "Diagnose recent Codex token hotspots"
+  default_prompt: "Use $token-use-diagnosis to explain recent token hotspots and suggest process changes."

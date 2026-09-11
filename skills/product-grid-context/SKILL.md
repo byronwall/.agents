@@ -7,6 +7,26 @@ description: Use when working in or around a Product Grid Management project and
 
 Use the `pgm` CLI to inspect and update Product Grid projects before changing code or answering project-specific questions.
 
+## URL Fast Path
+
+If the user provides a Product Grid URL with `project=...` and `node=...`, do not start with broad discovery. Resolve the issue context directly:
+
+```bash
+pgm issue view '<product-grid-url>' --json
+```
+
+If `pgm issue view` is not available, use the IDs from the URL:
+
+```bash
+pgm node view <node-id> --project <project-id> --with-context --compact --json
+```
+
+After implementation, prefer a compact status update:
+
+```bash
+pgm node resolve <node-id> --project <project-id> --status implemented --note "What changed." --json
+```
+
 ## Install
 
 Install the CLI from npm when `pgm` is not already available:
@@ -77,9 +97,9 @@ Recommended first pass:
 
 ```bash
 pgm project schema --json
-pgm node list --roots --compact --json
-pgm node list --status planned --type task --with-ancestors --json
-pgm node list --search "checkout" --json
+pgm node list --roots --compact --preset tree --json
+pgm node list --status planned --type task --with-ancestors --preset status --json
+pgm node list --search "checkout" --preset compact --json
 ```
 
 Use `--with-ancestors` when a node title is terse; it returns the root-to-leaf path without pulling every node's full body.
@@ -87,7 +107,7 @@ Use `--with-ancestors` when a node title is terse; it returns the root-to-leaf p
 When a specific node looks relevant, pull the inherited context projection:
 
 ```bash
-pgm node view <node-id> --with-context --json
+pgm node view <node-id> --with-context --compact --json
 ```
 
 For implementation handoff or deeper work, export only that node context:
@@ -96,13 +116,19 @@ For implementation handoff or deeper work, export only that node context:
 pgm node export-context <node-id> --output ./tmp/node-context.md
 ```
 
+When you need a parent node plus all descendant context, metadata, and image files in one local bundle, export a context pack:
+
+```bash
+pgm node context-pack <parent-node-id> --output ./tmp/context-pack --json
+```
+
 Use filters before expanding context:
 
 ```bash
-pgm node list --status working --with-ancestors --json
-pgm node list --type task --search "layout" --with-context --json
-pgm node list --status blocked --json
-pgm node list --type page --json
+pgm node list --status working --with-ancestors --preset status --json
+pgm node list --type task --search "layout" --with-context --compact --json
+pgm node list --status blocked --preset status --json
+pgm node list --type page --preset compact --json
 ```
 
 Avoid `pgm project view --json` as a default first step. It returns the full graph, all links, metadata, context, and images, which can be very large and usually wastes context. Use it only when you explicitly need the complete project record.
@@ -116,10 +142,11 @@ Product Grid hierarchy carries requirements. Parent nodes often contain the prod
 Prefer commands that preserve this hierarchy:
 
 ```bash
-pgm node list --with-ancestors --json
-pgm node list --with-context --json
-pgm node view <node-id> --with-context --json
+pgm node list --with-ancestors --preset status --json
+pgm node list --with-context --compact --json
+pgm node view <node-id> --with-context --compact --json
 pgm node export-context <node-id> --output ./tmp/node-context.md
+pgm node context-pack <parent-node-id> --output ./tmp/context-pack --json
 ```
 
 When reading node context, respect provenance:
@@ -203,6 +230,7 @@ Use `project export-markdown` only before broad edits or when another LLM proces
 ```bash
 pgm project export-markdown --output ./project-context.md
 pgm node export-context <node-id> --output ./node-context.md
+pgm node context-pack <parent-node-id> --output ./context-pack-dir --json
 ```
 
 ## Rules

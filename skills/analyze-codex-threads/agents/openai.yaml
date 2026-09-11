@@ -1,0 +1,4 @@
+interface:
+  display_name: "Analyze Codex Threads"
+  short_description: "Find recurring meaning in Codex task history"
+  default_prompt: "Use $analyze-codex-threads to review my recent Codex tasks and identify the most useful patterns and next steps."

@@ -1,0 +1,3 @@
+display_name: "Component Trim Refactor"
+short_description: "Refactor roughed-in UI work into small, maintainable components."
+default_prompt: "Refactor this feature implementation into a thin orchestrator and focused subcomponents/hooks. Preserve behavior, reduce file size, remove duplicated UI controls, and run type-check."

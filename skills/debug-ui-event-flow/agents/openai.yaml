@@ -1,0 +1,4 @@
+interface:
+  display_name: "Debug UI Event Flow"
+  short_description: "Trace pointer, click, and selection regressions"
+  default_prompt: "Use $debug-ui-event-flow to diagnose this UI event regression with real interaction evidence."

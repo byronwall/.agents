@@ -1,0 +1,4 @@
+interface:
+  display_name: "Prepare ChatGPT Pro Repo Prompt"
+  short_description: "Create grounded prompts for repository reviews"
+  default_prompt: "Use $prepare-chatgpt-pro-repo-prompt to create a copy-ready ChatGPT Pro prompt for this repository."

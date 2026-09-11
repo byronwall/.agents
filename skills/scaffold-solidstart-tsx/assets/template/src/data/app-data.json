@@ -1,0 +1,5 @@
+{
+  "name": "__PACKAGE_NAME__",
+  "title": "__APP_TITLE__",
+  "description": "A small SolidStart SPA with server-owned JSON data."
+}

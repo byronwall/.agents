@@ -1,0 +1,4 @@
+interface:
+  display_name: "Scaffold SolidStart TSX"
+  short_description: "Create a small typed SolidStart SPA quickly"
+  default_prompt: "Use $scaffold-solidstart-tsx to create a small SolidStart TSX app in this repository root."

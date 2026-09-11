@@ -1,0 +1,4 @@
+interface:
+  display_name: "pnpm 11 Upgrade"
+  short_description: "Migrate repos to pnpm 11 safely."
+  default_prompt: "Use $pnpm-11-upgrade to migrate this repo to pnpm 11 compatibility while keeping unrelated changes out."

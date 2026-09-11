@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create Calendar Entry"
+  short_description: "Create verified events on Byron calendars"
+  default_prompt: "Use $create-calendar-entry to add this event to my joint calendar."

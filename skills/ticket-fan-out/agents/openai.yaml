@@ -1,0 +1,4 @@
+interface:
+  display_name: "Ticket Fan-Out"
+  short_description: "Plan, schedule, and execute dependency-linked tickets"
+  default_prompt: "Use $ticket-fan-out to take this initiative from sleuth artifacts through tickets, then execute the safe parallel work."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Data Structure Reviewer"
+  short_description: "Finds high-leverage data model improvements"
+  default_prompt: "Use $review-data-structures to review this application’s data structures and recommend motivating, practical improvements."

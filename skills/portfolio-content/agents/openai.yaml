@@ -1,0 +1,4 @@
+interface:
+  display_name: "Portfolio Content"
+  short_description: "Create portfolio content and publish static releases."
+  default_prompt: "Use $portfolio-content to update portfolio content or build a static release, then verify it and publish when authorized."

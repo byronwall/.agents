@@ -1,0 +1,4 @@
+interface:
+  display_name: "Write in Byron’s Voice"
+  short_description: "Draft text that sounds like Byron"
+  default_prompt: "Use $write-byron-voice to draft this text in my voice, grounded in the source material I provide."

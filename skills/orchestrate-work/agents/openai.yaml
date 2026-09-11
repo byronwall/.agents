@@ -1,0 +1,4 @@
+interface:
+  display_name: "Orchestrate Work"
+  short_description: "Coordinate work through Spark subagents"
+  default_prompt: "Use $orchestrate-work to coordinate this work through focused GPT-5.3 Codex Spark subagents."

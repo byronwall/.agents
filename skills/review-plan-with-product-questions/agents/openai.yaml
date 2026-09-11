@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Plan with Product Questions"
+  short_description: "Review plans through product priorities first"
+  default_prompt: "Use $review-plan-with-product-questions to review this plan, ask product questions first, and identify its weakest implementation risks."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test OpenGraph Contact Sheets"
+  short_description: "Render and compare real OpenGraph image variants"
+  default_prompt: "Use $test-opengraph-contact-sheets to render representative OpenGraph images and assemble a labeled contact sheet for review."

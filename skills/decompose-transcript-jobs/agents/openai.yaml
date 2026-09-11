@@ -1,0 +1,4 @@
+interface:
+  display_name: "Decompose Transcript Jobs"
+  short_description: "Turn transcripts into jobs, themes, and plans"
+  default_prompt: "Use $decompose-transcript-jobs to turn this transcript into traceable jobs, themes, scope, and next steps."

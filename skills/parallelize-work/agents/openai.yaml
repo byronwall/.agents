@@ -1,0 +1,4 @@
+interface:
+  display_name: "Parallelize Work"
+  short_description: "Find safe seams and fill idle agent slots"
+  default_prompt: "Use $parallelize-work to find safe seams in the current work and fill idle agent slots now."
