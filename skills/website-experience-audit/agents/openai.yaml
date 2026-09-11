@@ -1,0 +1,4 @@
+interface:
+  display_name: "Website Experience Audit"
+  short_description: "Audit website structure, learning, and interaction"
+  default_prompt: "Use $website-experience-audit to perform a deep evidence-based audit of this website."

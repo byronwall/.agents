@@ -1,0 +1,3 @@
+display_name: Product Grid Context
+short_description: Query Product Grid project, node, and graph context with pgm.
+default_prompt: Use pgm to inspect the current Product Grid project schema and summarize the relevant nodes.

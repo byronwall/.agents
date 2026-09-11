@@ -1,0 +1,3 @@
+display_name: Webpage Review and Redesign
+short_description: Review a running URL, score UX/UI quality, and generate redesign mockups.
+default_prompt: Review this webpage URL in detail, score the UX/UI, recommend improvements, and generate redesign mockups.

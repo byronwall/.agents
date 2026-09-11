@@ -1,0 +1,41 @@
+{
+  "version": 3,
+  "skills": {
+    "srcly-code-quality": {
+      "source": "byronwall/srcly",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/byronwall/srcly.git",
+      "skillPath": "skills/srcly-code-quality/SKILL.md",
+      "skillFolderHash": "68201c2843401ebb5171c77ea608ea0342581e99",
+      "installedAt": "2026-05-03T03:15:55.920Z",
+      "updatedAt": "2026-05-03T03:48:06.144Z"
+    },
+    "wayfinder": {
+      "source": "mattpocock/skills",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/mattpocock/skills.git",
+      "skillPath": "skills/engineering/wayfinder/SKILL.md",
+      "skillFolderHash": "8ec0462658381bd1606d3f9db14ffc67df6a2a43",
+      "pluginName": "mattpocock-skills",
+      "installedAt": "2026-09-09T02:45:06.894Z",
+      "updatedAt": "2026-09-09T02:45:06.894Z"
+    }
+  },
+  "dismissed": {
+    "findSkillsPrompt": true
+  },
+  "lastSelectedAgents": [
+    "amp",
+    "cline",
+    "codex",
+    "cursor",
+    "droid",
+    "gemini-cli",
+    "github-copilot",
+    "kilo",
+    "kimi-code-cli",
+    "opencode",
+    "warp",
+    "zed"
+  ]
+}
