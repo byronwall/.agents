@@ -1,6 +1,6 @@
 ---
 name: orchestrate-work
-description: Coordinate substantial work from one persistent orchestrator with narrowly scoped GPT-5.6 Luna collaboration subagents. Use when Byron says `$orchestrate-work`, asks Codex to be an orchestrator, requests parallel implementation or investigation, asks to split coding from verification, or wants a coordinated feedback loop. Create a dedicated Codex task only for a new orchestrator, an explicit request for a separate task, or a wholly new scope that needs independent ownership and history.
+description: Coordinate substantial work from one persistent orchestrator with narrowly scoped GPT-6 Luna collaboration subagents. Use when Byron says `$orchestrate-work`, asks Codex to be an orchestrator, requests parallel implementation or investigation, asks to split coding from verification, or wants a coordinated feedback loop. Create a dedicated Codex task only for a new orchestrator, an explicit request for a separate task, or a wholly new scope that needs independent ownership and history.
 ---
 
 # Orchestrate Work
@@ -47,7 +47,7 @@ create dedicated tasks only to preserve the title family.
 - Use collaboration tools such as `spawn_agent`, `wait_agent`, `send_message`,
   `followup_task`, and `interrupt_agent`.
 - Unless Byron specifies otherwise, spawn workers with `model:
-  "gpt-5.6-luna"` and `reasoning_effort: "high"`.
+  "gpt-6-luna"` and `reasoning_effort: "high"`.
 - Default to `fork_turns: "none"`. Use a small bounded turn count only when
   inherited context has clear value. Give each subagent a self-contained brief.
 - Default to a new subagent with empty context. Do not reuse a subagent only
@@ -89,8 +89,8 @@ When a dedicated task is justified:
 - Use the owning project's saved checkout and a local environment.
 - Never create a git worktree unless Byron explicitly requests one.
 - For a new persistent orchestrator, use GPT-5.6 Sol at High reasoning. Never
-  use GPT-5.6 Luna for that orchestrator.
-- For other dedicated tasks, use GPT-5.6 Luna at High reasoning unless project
+  use GPT-6 Luna for that orchestrator.
+- For other dedicated tasks, use GPT-6 Luna at High reasoning unless project
   instructions or Byron set a different default.
 - For a worker in this orchestrator family, title it `<emoji> 01 · <short
   description>`, then increase the number by creation order.
@@ -172,7 +172,7 @@ Use a separate verification subagent when an independent pass is practical.
 
 ## Review from evidence
 
-Use GPT-5.6 Luna at High reasoning for all subagent work. Review each
+Use GPT-6 Luna at High reasoning for all subagent work. Review each
 result against direct evidence and required checks. Change the model only when
 Byron explicitly requests it.
 

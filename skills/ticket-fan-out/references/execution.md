@@ -1,6 +1,8 @@
 # Dependency-Aware Execution
 
-Use this mode only when the user asks to start implementation. The ticket graph sets eligibility. Repository state sets safe concurrency.
+Use this mode only when the user asks to start implementation. The ticket graph
+sets the frontier. Refine `open` tickets there before execution. Repository
+state sets safe concurrency.
 
 ## Load the live graph
 
@@ -10,12 +12,23 @@ For `tk`, inspect:
 
 ```sh
 tk ready
+tk frontier
 tk blocked
 tk dep cycle
 tk dep tree --full <epic-id>
 ```
 
-Refresh this view after each completed or changed ticket. Never execute a blocked ticket.
+Refresh this view after each completed or changed ticket. The frontier includes
+unblocked `open` and `ready` tickets. `open` means refinement remains; `ready`
+means it can be executed. Never execute an `open` or dependency-blocked ticket.
+
+For each `open` frontier ticket, follow the refinement pass in the main skill.
+Inspect the current repository and proof environment. Split the ticket or add
+coarse `open` prerequisites when the evidence requires it. Update dependencies
+and the initiative state, then refresh the frontier. Repeat this pass before
+each new wave. Set a ticket to `ready` only after its execution packet passes
+the ready gate. Recheck a `ready` ticket before starting; demote it to `open`
+and refine it again if material facts have changed.
 
 Before `tk start`, confirm the ticket's ready gate against the current
 repository and environment:
@@ -30,7 +43,7 @@ implementation and recover the missing decision in a private worker prompt.
 
 ## Build the next wave
 
-For each ready ticket, record its outcome, owned context, likely files or shared state, proof, and downstream tickets it unlocks.
+For each `ready` ticket, record its outcome, owned context, likely files or shared state, proof, and downstream tickets it unlocks.
 
 Choose the largest safe set that fits current worker capacity. Two ready tickets can run together only when they can make progress without unfinished output from each other and either:
 
@@ -70,14 +83,15 @@ Without active orchestration, follow current project rules. Do not silently turn
 
 ## Advance the graph
 
-Immediately before work begins, mark the ticket in progress. After the worker reports:
+Immediately before work begins, run `tk start <id>`. It requires `ready` status
+and closed dependencies. After the worker reports:
 
 1. inspect the diff and direct check output;
 2. run or confirm each item in the ticket's acceptance checklist;
 3. add a concise tracker note with evidence when supported;
-4. close the ticket only when its outcome is complete;
-5. keep failed or partial work open or in progress with a precise note;
-6. reload ready and blocked tickets;
+4. close only after the outcome and required proof pass; move unavailable proof to a later ticket first;
+5. keep failed or partial work in progress, or demote it to `open` when it needs a new planning pass;
+6. reload frontier, ready, and blocked tickets;
 7. dispatch the next safe wave.
 
 Use a separate verification worker when risk or user-visible scope warrants it. Do not spend every slot on implementation if clean verification is the next useful lane.

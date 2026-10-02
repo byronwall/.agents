@@ -231,6 +231,8 @@ The implementation plan should contain:
 
 A first milestone may use a local substitute when that is the fastest way to prove real behavior. It must still produce a visible or operator-visible outcome and leave a clear path to the real dependency.
 
+Before naming browser or database proof, check the local service and data target. If safe test data is unavailable, defer that proof. State what the first milestone can verify.
+
 Do not create horizontal “frontend,” “backend,” “infrastructure,” or “tests” milestones without an independently useful outcome.
 
 ## Updates and downstream invalidation

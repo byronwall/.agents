@@ -5,19 +5,19 @@ description: Move a software initiative from messy source material through Softw
 
 # Ticket Fan-Out
 
-Create a complete handoff from product intent to executable work. Keep the
-sleuth artifacts as planning truth while tickets are created. After creation,
-each ticket must stand alone for its executor. Repeat decision-changing context,
-but do not copy background that does not affect execution or proof.
+Plan each ticket twice. First create a coarse `open` graph for the full outcome.
+Then refine each ticket when it reaches the frontier, just before execution.
+Keep the sleuth artifacts as planning truth. A `ready` ticket must stand alone
+for its executor; an `open` ticket records the known outcome and route to it.
 
 ## Modes
 
 Infer the mode from the request:
 
-- `prepare` — run or resume sleuth, create the ticket graph, and stop. This is the default.
+- `prepare` — run or resume sleuth, create the coarse `open` graph, and stop. This is the default.
 - `tickets` — create or repair the graph from an existing plan.
-- `execute` — load an existing graph and implement ready tickets.
-- `deliver` — prepare the graph, then execute it through the requested epic or scope.
+- `execute` — refine frontier tickets, then implement `ready` tickets.
+- `deliver` — prepare the graph, then refine and execute it through the requested scope.
 
 Do not start implementation unless the user asks to execute, implement, start, run, or deliver the work. For `execute` or `deliver`, read [references/execution.md](references/execution.md).
 
@@ -44,37 +44,79 @@ Creating local repository tickets is within scope when the user asks to fan out 
 
 Inspect the tracker help before mutation. Preserve dirty work and unrelated tickets.
 
-## 3. Design the graph before creation
+## 3. Create the coarse graph
 
 Use one epic only when several packets share one outcome. Skip the epic for a small initiative.
 
-Create the fewest packets that leave clear ownership boundaries. Do not reduce ticket count by combining outcomes that need different proof or ownership. Each packet must:
+Create the fewest tickets that leave clear outcome and ownership boundaries.
+Do not reduce ticket count by combining outcomes that need different proof or
+ownership. Each coarse ticket must:
 
 - deliver one visible, operator-visible, or decision-changing outcome;
-- fit one focused implementation pass;
-- name the concrete repository context it owns;
-- include settled decisions and a clear invention boundary;
-- include the smallest proof that can fail if the work is wrong;
-- state what remains below the cut line;
+- describe the user-facing or operator-facing change and main steps;
+- name likely components or architecture only at a general level;
+- record known dependencies, decisions, and a provisional ready gate;
+- name the intended proof and what remains below the cut line;
 - retain provenance to the sleuth claim, selected shape, plan milestone, and repository baseline.
 
-Before a packet can be ready, confirm that it has no unresolved product
-decision, delete-or-preserve boundary, missing prerequisite, or proof that
-cannot run in the current environment. Keep a packet blocked when any of these
-remain. Do not use an `Open Decision` section in a ready ticket.
+Write high-level to medium-level scope for the full change. Do not add line
+numbers, code samples, exact file edits, or detailed implementation steps to
+`open` tickets. Record only high-confidence work. Leave uncertain structure
+for the frontier pass. An `open` status means the ticket still needs refinement,
+even when its dependencies are closed. Do not mark it `ready` during broad
+fan-out merely because the initial plan looks complete.
 
-Before writing tickets, inventory every known goal, user need, requirement, decision, constraint, non-goal, current-system fact, dependency, risk, failure case, proof, rollout rule, and below-cut-line item in the current sleuth artifacts. Map every item to the tickets it affects. Copy cross-cutting items into every affected ticket.
+Use a short coarse body with `Outcome`, `Likely Steps`, `Ready Gate`, and
+`Provenance`. The ready gate names what to confirm at the frontier: current
+repository shape, required decisions, prerequisites, and runnable proof. Add
+known failure or data boundaries when they affect the outcome. Do not fill the
+execution-packet template during this first pass.
 
-Every source item must appear in at least one ticket. Any item that can change an executor's decisions must appear in that executor's ticket. The epic is not a substitute because an executor may receive only one child ticket.
+Before writing tickets, map each decision-changing goal, constraint, system
+fact, failure case, proof, and cut-line item from the sleuth artifacts to the
+tickets it affects. Each affected ticket must carry its relevant context; the
+epic cannot carry required context for a child.
 
 Do not split work into horizontal frontend, backend, database, or test tickets unless that unit provides an independent proof. Do not create tickets for speculative polish or below-cut-line work.
 
-Dependencies represent real prerequisites, not preferred chronology. Prefer one ready proof-first packet. Add parallel roots only when they are truly independent. Do not link every ticket to every other ticket.
+Dependencies represent real prerequisites, not preferred chronology. Prefer one
+proof-first root. Add parallel roots only when they are truly independent.
 
-## 4. Write execution packets
+For `tk`, create the epic and `open` tickets first, then add prerequisite edges
+with `tk dep <ticket> <prerequisite>`. If the epic tracks completion, make it
+depend on its children. Children do not depend on the epic merely because it is
+their parent.
+
+## 4. Refine the frontier into execution packets
+
+The frontier contains tickets with status `open` or `ready` whose dependencies
+are closed. With `tk`, use `tk frontier` to see it, `tk ready` to see executable
+tickets, and `tk blocked` to see unfinished tickets with unresolved dependencies.
+Refresh the frontier after each graph change or completion.
+
+Before executing an `open` frontier ticket, inspect the current repository,
+plan, dependencies, and proof environment. Re-plan that ticket against what
+exists now. Split it when separate outcomes or proof demand separate work.
+Create newly found prerequisite tickets as coarse `open` tickets, add real
+dependency edges, and refine the new frontier first. Repeat until the graph
+has an executable root. Keep blocked tickets `open`; a dependency alone does
+not mean the ticket has passed refinement. Do not implement an `open` ticket.
+
+If a new product decision is required, use the sleuth update flow and stop at
+its decision gate. If repository evidence changes the plan or graph, update the
+canonical initiative state and affected tickets. Preserve the original outcome
+when splitting; close a replaced ticket only after its outcome is delivered by
+the replacement tickets.
+
+Before changing status to `ready`, confirm no unresolved product decision,
+delete-or-preserve boundary, missing prerequisite, or unavailable proof. For
+browser or database proof, check the server and data target. Name disposable
+test data or a safe read-only path. Otherwise, defer that proof to another
+ticket. Only then write the execution packet and run `tk status <id> ready`.
 
 Use the tracker's native fields for title, type, priority, parent, dependencies,
-tags, and external reference. Write a prioritized execution contract, not a
+tags, and external reference. The following detail applies when refining a
+frontier ticket to `ready`. Write a prioritized execution contract, not a
 miniature copy of the plan. Aim for 300–650 words when that range can retain all
 decision-changing facts. For a body over 700 words, split independent proofs or
 state why one executor needs the extra context.
@@ -155,16 +197,17 @@ decisions. If the plan lacks detail required for a safe ticket, return to the
 sleuth update flow instead of filling the gap. Do not compensate with a longer
 ticket.
 
-For `tk`, create the epic and packets first, then add prerequisite edges with `tk dep <ticket> <prerequisite>`. If the epic tracks completion, make it depend on its child packets. Do not make children depend on the epic merely because it is their parent.
-
 ## 5. Reconcile and verify
 
 After IDs exist, record them in the canonical initiative state and add short links from the implementation plan when its format supports them. Do not duplicate ticket bodies in the plan.
 
 Verify the observable graph with the tracker:
 
-- every inventoried source item is present in each ticket it affects;
+- every inventoried source item is present in each ticket it affects at the
+  detail appropriate for its status;
 - no ticket depends on a linked plan or epic for essential context;
+- coarse `open` tickets contain no premature code or line-level detail;
+- every `ready` ticket has current repository evidence and stands alone;
 - every implementation detail is source-backed or clearly left to executor discretion;
 - every ready ticket passes its ready gate and contains no open decision;
 - exact acceptance values are fixtures or labeled observations, not volatile invariants;
@@ -172,7 +215,7 @@ Verify the observable graph with the tracker:
 - no dependency cycles;
 - every ticket belongs to the intended initiative;
 - blocked tickets have a real prerequisite;
-- ready output exposes the intended first proof and any valid parallel roots;
+- frontier output exposes the intended first proof and any valid parallel roots;
 - the epic completion graph includes all intended packets;
 - sleuth artifact validation and repository formatting checks still pass.
 
@@ -180,6 +223,9 @@ Do not publish remote issues, push, or deploy unless the user also requests it. 
 
 ## Report
 
-For `prepare` or `tickets`, return links to the implementation plan, epic when present, and first ready ticket. State the ticket count, ready roots, validation result, and any unresolved human decision.
+For `prepare` or `tickets`, return links to the implementation plan, epic when
+present, and first frontier ticket. State the ticket count, frontier roots,
+validation result, and any unresolved human decision.
 
-For `execute` or `deliver`, report completed tickets, remaining ready and blocked tickets, verification evidence, and the next dependency wave.
+For `execute` or `deliver`, report completed tickets, remaining `open`, `ready`,
+and blocked tickets, verification evidence, and the next frontier wave.
