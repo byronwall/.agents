@@ -28,31 +28,35 @@ It is not a detailed design document or implementation backlog.
 8. Choose the first proof.
 9. Write the concise shape brief.
 
-## Recommended shape standard
+## Analysis and presentation
 
-The selected shape should include:
+Keep the source-of-truth decision, seam to current behavior, valid intermediate state, rollback path, and first proof in the shaping analysis. Record 3–6 implementation-success moves in the initiative map. These gates remain active even when the human document is short.
 
-- one coherent user or operator flow;
-- the minimum system elements required;
-- a clear source of truth or ownership model when state matters;
-- the seam to current behavior;
-- a valid intermediate state;
-- a disable, bypass, or rollback path;
-- a first proof that can invalidate the recommendation.
+The main human surface is one `shape-brief.md`, not a prose brief plus a second feature document. Follow the template:
 
-## “How to make this go better”
+- Outcome and primary flow: two short lines.
+- Feature scope: nested user-visible capabilities.
+- Behavior: optional table of situations and expected results.
+- Examples: optional concrete samples, with unconfirmed choices labeled.
+- Decisions and boundaries: appetite, consequential constraints, material pushback, first proof, and at most two open human choices.
 
-This section is mandatory for capability and program work and for any feature with a material external dependency.
+Use roughly 400–800 words, including samples, with a 1,000-word hard maximum. Do not pad a small feature to reach the target. The tree should be easy to scan without requiring a second prose description of each branch.
 
-Use 3–6 plain-language recommendations. Examples:
+## Tree rules
 
-- Put the provider behind a small interface so the core behavior is testable without the cloud.
-- Prove read/write and failure semantics locally before adding IAM and deployment wiring.
-- Keep the old path available until the new path has a live sandbox smoke test.
-- Build one representative end-to-end flow before generalizing to all config types.
-- Reuse the existing lifecycle rather than introducing a second source of truth.
+Group scope by planned additions, evaluation candidates, and later possibilities when those distinctions exist. Omit empty groups. Do not imply that proposed features already exist or that a candidate is a commitment.
 
-Do not hide these recommendations in a risk register.
+Use two to four useful levels of nesting. Group sibling details on one line when they share meaning. Keep qualifiers such as optional, off by default, and shared across facets beside the relevant feature. Identify existing features only when they clarify the change.
+
+Put settings, outputs, and user actions in the tree. Put interaction and failure rules in the behavior table. Put implementation files, tasks, provider proof ladders, and milestone order in the map or plan. A service initiative may use operator capabilities rather than screen features.
+
+## Preserve the decisions
+
+Keep the implementation-success challenge internal and retain its evidence in the map. Surface only recommendations that change the selected shape, with their concrete benefit. Do not require three repeated recommendations in the human artifact.
+
+The closing section must expose a first proof: **Try → Observe → Decide**. It must name a small meaningful slice, observable evidence, and a decision rule. A feature inventory with no proof is not a completed shape.
+
+Keep appetite and exclusions concise. Include ownership, reuse collisions, and rollback when they materially affect what the user gets. Include a serious alternative only when it explains a consequential tradeoff. Unknown product choices stay explicit; examples cannot settle them silently.
 
 ## Rabbit-hole categories
 

@@ -95,14 +95,18 @@ const scores = [];
 {
   const moves = map.shape?.success_moves || [];
   const proof = map.shape?.first_proof;
-  const hasSection = /## How to make this go better/m.test(shape);
-  const hasRabbitHoles = /## Rabbit holes and no-gos/m.test(shape);
-  let score = shape ? 3 : 0;
-  if (hasSection) score += 2;
-  score += Math.min(2.5, moves.length / 5 * 2.5);
+  const hasTree = /## Feature scope/m.test(shape) && /(?:├──|└──|\+--|\|--)/.test(shape);
+  const hasDecisions = /## Decisions and boundaries/m.test(shape);
+  const hasHumanProof = ['First proof', 'Try', 'Observe', 'Decide'].every((label) =>
+    new RegExp(`\\*\\*${label}:\\*\\*\\s*\\S`).test(shape));
+  let score = shape ? 1 : 0;
+  if (hasTree) score += 2;
+  if (hasDecisions) score += 1;
+  score += Math.min(2, moves.length / 3 * 2);
   if (proof?.question && proof?.artifact && proof?.decision_rule) score += 1.5;
-  if (hasRabbitHoles) score += 1;
-  scores.push(result('Shape challenge', score, `${moves.length} implementation-success moves; first proof ${proof ? 'defined' : 'missing'}.`, score < 9 ? ['State the material pushback plainly and connect each success move to a shorter loop or named risk.'] : []));
+  if (hasHumanProof) score += 1.5;
+  if (shape && words(shape) <= 800) score += 1;
+  scores.push(result('Shape clarity and challenge', score, `${moves.length} recorded success moves; scope tree ${hasTree ? 'present' : 'missing'}; human first proof ${hasHumanProof ? 'present' : 'missing'}.`, score < 9 ? ['Expose additions in a capability tree and retain a visible Try/Observe/Decide proof. Keep detailed success moves in the map.'] : []));
 }
 
 {
@@ -165,7 +169,7 @@ const scores = [];
   if (current > 0) score += 2;
   if (history > 0) score += 2;
   if (stale === 0) score += 1;
-  scores.push(result('State continuity', score, `${current} current artifacts, ${stale} stale artifacts, ${history} history entries.`, score < 9 ? ['Mark invalidated downstream artifacts stale immediately and record the semantic delta.'] : []));
+  scores.push(result('State continuity', score, `${current} current artifacts, ${stale} stale artifacts, ${history} history entries. Lifecycle: ${map.initiative?.status || 'not assessed'}.`, score < 9 ? ['Mark invalidated downstream artifacts stale immediately and record the semantic delta.'] : []));
 }
 
 const overall = clamp(scores.reduce((sum, item) => sum + item.score, 0) / scores.length);

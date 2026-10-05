@@ -63,16 +63,12 @@ Prefer moves such as:
 - “Add a fallback that has never been exercised.”
 - “Make the new path authoritative before it is observable.”
 
-## Pushback format
+## Surface material pushback
 
-Keep pushback concise and actionable:
+Keep 3–6 concrete success moves in `initiative-map.json`. The human shape does not need a separate worksheet or a fixed number of visible recommendations.
 
-```markdown
-## How to make this go better
+Under **Decisions and boundaries**, surface only changes that materially improve the selected shape. State the decision and its benefit. For example:
 
-- **Separate core behavior from AWS.** Define a small configuration-store boundary and prove application behavior against a deterministic local implementation first.
-- **Use two integration proofs, not one giant cloud test.** Run provider semantics against LocalStack or another faithful emulator, then keep a small sandbox smoke test for IAM and AWS-specific behavior.
-- **Add one provider at a time.** Prove Parameter Store reads and writes before adding Secrets Manager rotation or fallback behavior.
-```
+> **Key decision:** Prove update → persist → restart with local stores before adding AWS. This separates application behavior from provider access and permission failures.
 
-Explain the benefit, not the methodology name.
+Keep detailed seams, proof ladders, and milestone order in the map and implementation plan. The shorter presentation must not remove the first proof or hide a consequential constraint.

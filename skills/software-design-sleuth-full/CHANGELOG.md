@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.6.0 — Tree-based shaping
+
+- Replace the prose shape layout with a scope tree and compact behavior/decision view.
+- Keep optional samples within a 400–800 word default budget; cap shapes at 1,000 words.
+- Preserve the internal success pass and visible Try/Observe/Decide first proof.
+- Update the template, checks, audit, AWS example, and regression guidance.
+- Keep initiative-map schema 0.5.0 and its existing proof fields.
+
+## 0.5.0 — Lifecycle and retirement
+
+- Added initiative lifecycle and read-only `status` mode.
+- Added explicit-approval `retire` mode, intent-to-code reconciliation, durable documentation, and compact closure history.
+- A clear initial retirement request supplies approval; completion and cancellation do not.
+- Added structural closure checks and retirement regression coverage.
+- Kept existing initiative lifecycle unassessed until repository evidence is inspected.
+
 ## 0.4.0 — Intent to Proof
 
 ### Added

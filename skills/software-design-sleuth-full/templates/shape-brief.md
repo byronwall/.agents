@@ -6,56 +6,51 @@ status: draft
 last_updated: "YYYY-MM-DD"
 ---
 
-# [Initiative title] — shape brief
+# [Initiative title] — what we are adding
 
-## Recommendation
+**Outcome:** [What becomes possible for the user or operator.]
 
-[State the recommended product and system shape in 100–200 words. Name any material pushback immediately.]
+**Primary flow:** [Start → essential actions → useful result.]
 
-## Problem and appetite
+## Feature scope
 
-- **Problem:** [Solution-neutral problem]
-- **Outcome:** [What becomes true]
-- **Appetite:** [Time/size boundary or relative appetite]
-- **Not in this shape:** [Important exclusions]
+```text
+[Capability]
+├── PLANNED ADDITIONS
+│   ├── [Feature: observable capability]
+│   │   ├── [Meaningful choice or output]
+│   │   └── [Related detail]
+│   └── [Another feature]
+├── EVALUATE BEFORE COMMITTING
+│   └── [Candidate, only if one exists]
+└── LATER POSSIBILITIES
+    └── [Explicitly deferred option, only if one exists]
+```
 
-## Core shape
+[Remove unused branches. Identify existing context only where it explains what changes. Do not turn branches into implementation tasks.]
 
-[Describe the essential user or operator flow, system elements, source of truth, and boundary to the current system. Use one compact diagram when it clarifies the shape.]
+## Behavior
 
-## Current fit
+| Situation | Expected result |
+| --- | --- |
+| [Action or condition] | [Specific observable behavior] |
 
-- **Reuse:** [Stable paths or concepts to preserve]
-- **Add:** [Minimum new pieces]
-- **Avoid or replace:** [Collision, duplicate authority, or accidental constraint]
+[Omit this section when the tree already explains the relevant rules.]
 
-## How to make this go better
+## Examples
 
-- **[Success move].** [What to do and the concrete benefit: faster feedback, lower risk, easier rollback, or clearer proof.]
-- **[Success move].** ...
-- **[Success move].** ...
+[Optional samples inside the total word budget. Label unconfirmed syntax or behavior. Omit when examples add no value.]
 
-## First proof
+## Decisions and boundaries
 
-- **Question:** [What uncertainty could change the shape?]
-- **Proof:** [Smallest meaningful artifact or slice]
-- **Observe:** [Evidence or behavior]
-- **Pass / fail:** [Decision rule]
-- **Deliberately excludes:** [Infrastructure, polish, or generalization not needed]
+**Appetite:** [Bounded size or scope; do not invent a time budget.]
 
-## Rabbit holes and no-gos
+**Key decision:** [Only material pushback, ownership, reuse/collision, or an alternative that explains the chosen shape. State the benefit.]
 
-- [Specific technical or product rabbit hole]
-- [Specific no-go]
+**Boundary:** [Consequential exclusions, disable/bypass path, and limitations; do not repeat deferred tree branches.]
 
-## Serious alternative
+**First proof:** **Try:** [Smallest meaningful slice.] **Observe:** [Evidence that answers the main uncertainty.] **Decide:** [Pass/fail rule that changes the next action.]
 
-[Optional. Include one alternative only when it sharpens a consequential decision.]
+**Open choices:** [At most two remaining human decisions; omit if none.]
 
-## What still needs your input
-
-[At most two product, policy, appetite, or irreversible-direction decisions. Omit when none.]
-
-## Plan handoff
-
-[State what the implementation plan should prove first and which choices remain provisional.]
+[Link the intent and implementation plan when present. Keep detailed proof strategy and success moves in the initiative map.]

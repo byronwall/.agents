@@ -1,6 +1,6 @@
 # Software Design Sleuth — Intent to Proof
 
-Version 0.4.0
+Version 0.6.0
 
 A scale-aware Agent Skill that turns messy transcripts, notes, repositories, and iterative dictation into a connected planning system:
 
@@ -24,7 +24,7 @@ The v0.3 intent brief and JSON sidecar remain the foundation. Version 0.4 adds:
 
 - one integrated `intent → shape → plan` workflow;
 - optional concise brainstorming with 6–7 genuinely contrasting options;
-- a mandatory **How to make this go better** pass during shaping;
+- tree-based shaping with an internal implementation-success pass and a visible first proof;
 - explicit pressure toward smaller proofs, faster local feedback, isolated dependencies, and reversible rollout;
 - a dependency proof ladder that distinguishes fakes, mocks, emulators/containers, contract tests, live sandboxes, and deployed proof;
 - implementation milestones compatible with the strongest thin-slice principles from `byronize-task-list`;
@@ -52,14 +52,14 @@ cp -R software-design-sleuth .claude/skills/software-design-sleuth
 
 ## Migrating an existing v0.3 initiative
 
-Version 0.3 used `intent-map.json`. Version 0.4 uses the broader `initiative-map.json`. Migrate without deleting the old file:
+Version 0.3 used `intent-map.json`. The current release uses the broader `initiative-map.json`. Migrate without deleting the old file:
 
 ```bash
 node ~/.claude/skills/software-design-sleuth/scripts/migrate-v0.3.mjs \
   docs/intent/<initiative-slug>
 ```
 
-The script preserves `intent-map.json`, carries forward sources, claims, themes, questions, and history, and marks any existing brainstorm, shape, or implementation plan stale. Re-run the relevant phase so the new implementation-success and dependency-proof gates are applied.
+The script preserves `intent-map.json`, writes schema version 0.5.0 with unassessed lifecycle status, and carries forward sources, claims, themes, questions, and history, and marks any existing brainstorm, shape, or implementation plan stale. Re-run the relevant phase so the new implementation-success and dependency-proof gates are applied.
 
 ## Modes
 
@@ -72,6 +72,8 @@ The script preserves `intent-map.json`, carries forward sources, claims, themes,
 | `full` | You want the skill to advance unattended through every safe phase | All applicable artifacts |
 | `update` | You are dictating corrections or supplying new evidence | Updated artifacts plus a short delta |
 | `audit` | You want a quality review of existing artifacts | Scores and high-leverage improvements |
+| `status` | You want to see where initiatives stand | Read-only lifecycle and retirement view |
+| `retire` | You explicitly approve retirement of an initiative | Durable docs, closure record, removed planning files |
 
 The skill resumes from `initiative-map.json`. It does not restart intent recovery every time.
 
@@ -163,7 +165,9 @@ runtime. Update the artifacts, invalidate stale downstream work, and continue.
 
 ## The implementation-success behavior
 
-For capability and program work—and any feature with a material external dependency—the shape must contain **How to make this go better**.
+The default `shape-brief.md` uses an outcome, primary flow, scope tree, optional behavior table and samples, and compact decisions with a first proof. Keep one human shaping surface. Use roughly 400–800 words; the hard maximum is 1,000.
+
+Keep 3–6 implementation-success moves in the initiative map. Surface material pushback under **Decisions and boundaries**; a separate worksheet is not required.
 
 The skill actively asks:
 
@@ -318,3 +322,17 @@ software-design-sleuth/
 - Do not make deployment the primary development loop without a specific justification.
 - Do not claim a fake or emulator proves provider identity, permissions, or production operations.
 - Do not keep a downstream plan current after its intent or shape changes.
+
+## Lifecycle and retirement
+
+Initiative status is separate from phase and artifact freshness.
+Use `planned`, `active`, `paused`, `completed`, or `cancelled`. Completion requires intent and implementation evidence.
+
+Retirement requires explicit user approval before file deletion. A clear initial retirement request counts; do not ask twice.
+Completion, cancellation, or a full planning run does not authorize retirement.
+Reconcile intent with code, update durable docs, and write a compact closure record before removing approved planning files.
+See [lifecycle and retirement](references/lifecycle-and-retirement.md) for the gate and status view.
+
+Existing lifecycle remains unassessed until inspected. The v0.3 migrator writes a 0.5 map with null status for assessment.
+Run retirement validation with `node scripts/validate-sleuth.mjs <initiative-dir> --retirement`.
+The validator checks structure; it cannot establish human approval or semantic correctness.

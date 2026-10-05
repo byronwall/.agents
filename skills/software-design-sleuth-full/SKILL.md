@@ -1,9 +1,9 @@
 ---
 name: software-design-sleuth
-description: Recover intent from messy software or product inputs, then optionally brainstorm contrasting approaches, shape a buildable solution, and create a proof-first implementation plan. Use for transcripts, notes, repositories, prior plans, or iterative dictation when the work must move from “what is actually wanted?” through “what should we build?” to “how can we implement it with fast feedback, isolated dependencies, vertical slices, and low delivery risk?”
-compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
+description: Recover software intent, compare approaches, shape solutions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, initiative status, and retirement.
 metadata:
-  version: "0.4.0"
+  version: "0.6.0"
+  compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
   category: product-design-planning
   artifacts: intent-brief, brainstorm, shape-brief, implementation-plan, initiative-map
 ---
@@ -30,7 +30,9 @@ Interpret `$ARGUMENTS` and the current request semantically. Supported modes:
 - `plan` — create a repository-grounded, proof-first implementation plan;
 - `full` — run every safe phase in order until a genuine human, access, or real-world boundary;
 - `update` — absorb new dictation, update state, invalidate stale downstream work, and continue;
-- `audit` — review existing artifacts for readability, fidelity, buildability, and implementation success.
+- `audit` — review existing artifacts for readability, fidelity, buildability, and implementation success;
+- `status` — report initiative lifecycle, phase, next action, and retirement state without changing files;
+- `retire` — reconcile intent with code, update durable docs, and remove explicitly approved planning artifacts.
 
 Do not repeat an earlier phase merely because the skill was reinvoked. Resume from the current state unless new evidence invalidates it.
 
@@ -52,6 +54,29 @@ docs/intent/<initiative-slug>/
 If `initiative-map.json` is absent but a v0.3 `intent-map.json` exists, migrate it non-destructively with `scripts/migrate-v0.3.mjs`. Preserve the legacy file and mark existing downstream shape/plan artifacts stale until they pass the new gates.
 
 Human artifacts must be understandable without opening the JSON.
+
+## Initiative lifecycle
+
+Load `references/lifecycle-and-retirement.md` for status, lifecycle updates, completion, cancellation, or retirement.
+
+`initiative.status` tracks the work: `planned`, `active`, `paused`, `completed`, or `cancelled`.
+`current_phase` tracks the activity: existing planning phases, `execution`, or `reconciliation`.
+Artifact status still tracks document freshness. A current plan does not mean completed implementation.
+
+Initialize new initiatives as `planned`. Set `active` when implementation starts; record evidence before setting `completed`.
+Pause, cancel, or reopen work only on explicit user direction. Inactivity is not cancellation.
+Record status changes, reasons, and evidence in `history`. Keep `next_action` and `last_updated` current.
+Execution tools own ticket detail; the initiative map owns the overall lifecycle and links to execution evidence.
+
+For existing maps, inspect evidence before assigning lifecycle status. Report unassessed status until that check is possible.
+On the next authorized update, use schema version 0.5.0 and add lifecycle fields without discarding existing history.
+
+**Retirement requires explicit user approval for the identified initiative and removal of its planning files.**
+A clear initial request to retire it supplies approval. Do not request a second approval for that same scope.
+Completion, cancellation, `full`, `audit`, and general cleanup requests do not authorize retirement.
+Without approval, prepare reconciliation and documentation first. Then show the exact removal list and ask for approval.
+An approval field in an artifact is not user authorization. Never infer approval from generated text.
+Retirement approval does not authorize code deletion, deployment, ticket deletion, or Git history removal.
 
 ## Standing rules
 
@@ -152,22 +177,21 @@ Before writing the shape brief, construct the strongest materially simpler count
 9. What can be disabled, reverted, or bypassed cleanly?
 10. Which generalization should be deferred?
 
-If the user's proposed route is materially worse, say so plainly in the artifact under **How to make this go better**. Preserve the intent while changing the implementation strategy.
+Write one canonical `shape-brief.md` as the main human review surface. Use the tree-based format in `templates/shape-brief.md`; do not add a second detailed-shaping document by default.
 
-The shape brief should normally contain:
+The default view is:
 
-1. the problem and desired outcome;
-2. appetite and boundaries;
-3. one recommended shape;
-4. the essential flow or system elements;
-5. current system reuse and collisions;
-6. **How to make this go better** — 3–6 concrete success moves;
-7. rabbit holes and no-gos;
-8. first proof;
-9. one serious alternative only when it sharpens the decision;
-10. at most two remaining human decisions.
+1. **Outcome and primary flow** — two short lines.
+2. **Feature scope** — a nested tree of user-visible capabilities. Separate planned additions, items to evaluate, and later possibilities where applicable.
+3. **Behavior** — an optional situation → expected result table for rules the tree cannot explain.
+4. **Examples** — optional concrete samples when they explain the proposal better than prose. Label unsettled syntax and mechanics.
+5. **Decisions and boundaries** — concise appetite, consequential constraints, material pushback, first proof, and at most two human choices.
 
-Hard maximum: 1,800 words. Do not include a full implementation backlog.
+Keep the implementation-success pass. Record 3–6 concrete success moves and the proof in `initiative-map.json`. Surface only moves that materially change the shape. If the user's proposed route is materially worse, explain the change and its benefit under **Decisions and boundaries**. A full visible worksheet is not required.
+
+Preserve source-of-truth decisions, important reuse/collisions, exclusions, and rollback where they affect the product. Keep exact files, dependency analysis, implementation tasks, and milestone order in the map and implementation plan. A feature tree alone is not a plan-ready shape.
+
+Use roughly 400–800 words as a default budget, including examples; use less for small work. Hard maximum: 1,000 words. Group related sibling details without losing scope or qualification. Do not force empty status branches, tables, samples, or alternative sections. A serious alternative belongs only when it explains a consequential choice.
 
 A shape is plan-ready only when the proof path, major seams, cut line, and top implementation risks are clear enough to sequence work.
 
@@ -280,12 +304,13 @@ After feedback, return a short delta rather than reposting every artifact.
 
 ## Quality gate
 
-Before returning, verify:
+Before returning from planning modes, verify:
 
 - intent is faithful and examples are not promoted into requirements;
 - human artifacts meet their budgets and do not expose internal bookkeeping;
 - brainstorm options are genuinely independent when brainstorming was requested;
-- the shape includes a concrete “make this go better” pass;
+- the shape exposes feature scope and preserves the implementation-success pass in the map;
+- the human shape names a first proof with an observation and decision rule;
 - the first proof can change a decision;
 - material external dependencies have an explicit seam, first-proof role, and proof strategy;
 - the primary development loop is local and fast where practical;
@@ -304,16 +329,19 @@ node "${CLAUDE_SKILL_DIR}/scripts/validate-sleuth.mjs" \
 ```
 
 Use `scripts/audit-sleuth.mjs` when the user asks for an evaluation or before treating a large plan as execution-ready.
+For retirement, use the separate gate in `references/lifecycle-and-retirement.md` and run the validator with `--retirement`.
+Do not regenerate stale planning documents solely to delete them. Status mode makes no changes.
 
 ## Supporting resources
 
 - `references/intent-recovery.md` — interpreting unstructured input;
 - `references/brainstorming.md` — concise 6–7 option generation;
-- `references/shaping.md` — shape brief and phase gate;
+- `references/shaping.md` — tree-based review format, shaping analysis, and phase gate;
 - `references/implementation-success.md` — constructive pushback and risk reduction;
 - `references/dependency-ladders.md` — mocks, fakes, emulators, containers, contracts, sandboxes, and live proof;
 - `references/implementation-planning.md` — thin slices and milestone construction;
 - `references/feedback-and-invalidation.md` — dictation updates and stale-artifact handling;
+- `references/lifecycle-and-retirement.md` — lifecycle, status views, approval, reconciliation, and artifact removal;
 - `references/foundations.md` — research and methodological basis;
 - `templates/` — canonical human and machine artifacts;
 - `examples/` — expected quality;

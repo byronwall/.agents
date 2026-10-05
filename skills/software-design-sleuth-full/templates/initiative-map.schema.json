@@ -5,17 +5,19 @@
   "type": "object",
   "required": ["schema_version", "initiative", "artifacts", "intent", "brainstorm", "shape", "implementation", "history"],
   "properties": {
-    "schema_version": {"const": "0.4.0"},
+    "schema_version": {"const": "0.5.0"},
     "initiative": {
       "type": "object",
-      "required": ["title", "slug", "scale", "current_phase", "last_updated", "summary"],
+      "required": ["title", "slug", "scale", "current_phase", "last_updated", "summary", "status", "next_action"],
       "properties": {
         "title": {"type": "string", "minLength": 1},
         "slug": {"type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$"},
         "scale": {"enum": ["feature", "capability", "program"]},
-        "current_phase": {"enum": ["intent", "brainstorm", "shape", "plan"]},
+        "current_phase": {"enum": ["intent", "brainstorm", "shape", "plan", "execution", "reconciliation"]},
         "last_updated": {"type": "string"},
-        "summary": {"type": "string"}
+        "summary": {"type": "string"},
+        "status": {"enum": ["planned", "active", "paused", "completed", "cancelled", null]},
+        "next_action": {"type": "string"}
       },
       "additionalProperties": true
     },
@@ -84,6 +86,85 @@
         "open_decisions": {"type": "array", "maxItems": 3}
       },
       "additionalProperties": true
+    },
+    "closure": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "summary",
+        "reason",
+        "evidence",
+        "reconciliation",
+        "documentation",
+        "follow_ups",
+        "retirement_files"
+      ],
+      "properties": {
+        "summary": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "reconciliation": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "claim_id",
+              "disposition",
+              "evidence"
+            ],
+            "properties": {
+              "claim_id": {
+                "type": "string"
+              },
+              "disposition": {
+                "enum": [
+                  "delivered",
+                  "changed",
+                  "omitted",
+                  "unresolved"
+                ]
+              },
+              "evidence": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        },
+        "documentation": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "follow_ups": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "retirement_files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "history": {"type": "array"}
   },
@@ -170,7 +251,8 @@
         "proof": {"type": "string"},
         "valid_intermediate_state": {"type": "string"},
         "rollback": {"type": "string"},
-        "status": {"type": "string"}
+        "status": {"enum": ["planned", "active", "completed", "cancelled"]},
+        "evidence": {"type": "array", "items": {"type": "string"}}
       },
       "additionalProperties": true
     }

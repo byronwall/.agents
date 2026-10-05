@@ -8,7 +8,7 @@ Score each dimension from 0 to 10. Use the attached inputs and repository as gro
 | Human readability | Briefs are concise, plain-language, non-repetitive, and easy to correct | Exposes source ledgers, IDs, matrices, or methodology jargon |
 | State continuity | JSON preserves exact anchors, claim strength, revisions, artifact status, and history | Downstream artifacts remain silently stale |
 | Brainstorm diversity | 6–7 coherent options differ in premise, ownership, workflow, boundary, or proof strategy | Cosmetic, framework-only, or minor feature variants |
-| Shape quality | Recommends one bounded coherent shape with appetite, first proof, cut line, and serious pushback | Restates the user's implementation idea without improving it |
+| Shape quality | Exposes additions in a concise scope tree, keeps commitments distinct, and preserves appetite, first proof, boundaries, and material pushback | Restates the user's implementation idea without improving it |
 | Implementation-success challenge | Finds a cheaper proof, faster loop, narrower seam, and lower-risk sequence | Accepts deployment-first or infrastructure-first work |
 | Repository grounding | Uses real subsystem names, stable paths, tests, configuration, and deployment constraints | Generic plan or speculative exact file list |
 | Dependency isolation | Material dependencies have narrow seams and are introduced separately where practical | Several providers, migrations, and domain changes arrive in one slice |
@@ -26,7 +26,9 @@ Treat any of these as a major regression even when the prose is strong:
 
 - intent brief exceeds the hard limit or exposes an evidence ledger;
 - brainstorm options share one governing premise;
-- capability/program shape lacks **How to make this go better**;
+- shape is only a feature inventory, with no visible observation and decision rule for its first proof;
+- a proposed example silently becomes a committed feature;
+- implementation-success analysis disappears from the map when the human shape becomes shorter;
 - a material dependency has no local proof strategy;
 - the first implementation milestone is scaffolding only;
 - the plan makes live cloud or deployment the normal failure-testing loop without justification;

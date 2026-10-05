@@ -7,7 +7,9 @@
 ## Must appear in the shape
 
 - The durable intent is configuration lifecycle and restart persistence, not merely SDK integration.
-- A plain-language **How to make this go better** section.
+- A capability tree and concise operator behavior rules.
+- Material pushback and a visible Try/Observe/Decide proof under **Decisions and boundaries**.
+- 3–6 concrete implementation-success moves retained in the initiative map.
 - A narrow application-facing seam around provider access.
 - A provider-free first proof or a specific explanation why it is impossible.
 - A deterministic local fake capable of named failures.

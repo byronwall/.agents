@@ -1,12 +1,14 @@
 {
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "initiative": {
     "title": "",
     "slug": "",
     "scale": "capability",
     "current_phase": "intent",
     "last_updated": "",
-    "summary": ""
+    "summary": "",
+    "status": "planned",
+    "next_action": ""
   },
   "artifacts": {
     "intent_brief": {
@@ -69,5 +71,6 @@
     "cut_line": [],
     "open_decisions": []
   },
-  "history": []
+  "history": [],
+  "closure": null
 }

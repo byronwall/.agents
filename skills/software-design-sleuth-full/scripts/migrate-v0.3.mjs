@@ -37,15 +37,19 @@ const hasBrainstorm = fs.existsSync(path.join(root, 'brainstorm.md'));
 const now = new Date().toISOString().slice(0, 10);
 
 const map = {
-  schema_version: '0.4.0',
+  schema_version: '0.5.0',
   initiative: {
     title: legacyInitiative.title || path.basename(root),
     slug: legacyInitiative.slug || path.basename(root),
     scale: legacyInitiative.scope || 'capability',
     current_phase: 'intent',
+    // Lifecycle remains unassessed until repository evidence is checked.
+    status: null,
+    next_action: 'Assess initiative lifecycle against repository evidence',
     last_updated: legacyInitiative.last_updated || now,
     summary: firstCoreOutcome
   },
+  closure: null,
   artifacts: {
     intent_brief: {
       path: 'intent-brief.md',

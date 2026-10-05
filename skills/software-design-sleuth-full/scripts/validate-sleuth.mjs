@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const root = path.resolve(process.argv[2] || '.');
+const retirement = process.argv.includes('--retirement');
 const errors = [];
 const warnings = [];
 
@@ -42,7 +43,7 @@ function count(text, regex) {
 
 function section(text, heading) {
   const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const match = text.match(new RegExp(`^## ${escaped}\\s*$([\\s\\S]*?)(?=^## |\\Z)`, 'm'));
+  const match = text.match(new RegExp(`^## ${escaped}\\s*$([\\s\\S]*?)(?=^## |(?![\\s\\S]))`, 'm'));
   return match?.[1] || '';
 }
 
@@ -118,19 +119,28 @@ function validateBrainstorm(file, text, map) {
 }
 
 function validateShape(file, text, map) {
-  requireHeadings(file, text, [
-    'Recommendation',
-    'Problem and appetite',
-    'Core shape',
-    'Current fit',
-    'How to make this go better',
-    'First proof',
-    'Rabbit holes and no-gos',
-    'Plan handoff'
-  ]);
-
+  requireHeadings(file, text, ['Feature scope', 'Decisions and boundaries']);
+  for (const label of ['Outcome', 'Primary flow']) {
+    if (!new RegExp(`\\*\\*${label}:\\*\\*\\s*\\S`).test(text)) {
+      fail(`${file}: missing ${label}`);
+    }
+  }
+  const scope = section(text, 'Feature scope');
+  if (!/(?:├──|└──|\+--|\|--)/.test(scope)) {
+    fail(`${file}: Feature scope needs a nested capability tree`);
+  }
+  if (!/planned|add(?:itions)?|required|included/i.test(scope)) {
+    fail(`${file}: tree must identify the intended additions`);
+  }
+  const decisions = section(text, 'Decisions and boundaries');
+  for (const label of ['First proof', 'Try', 'Observe', 'Decide']) {
+    if (!new RegExp(`\\*\\*${label}:\\*\\*\\s*\\S`).test(decisions)) {
+      fail(`${file}: Decisions and boundaries needs ${label}`);
+    }
+  }
   const wordCount = words(text);
-  if (wordCount > 1800) fail(`${file}: ${wordCount} words exceeds the 1,800-word shape limit`);
+  if (wordCount > 1000) fail(`${file}: ${wordCount} words exceeds the 1,000-word shape limit`);
+  else if (wordCount > 800) warn(`${file}: ${wordCount} words exceeds the default 400–800 word budget`);
 
   const success = map.shape?.success_moves || [];
   if (success.length < 3 || success.length > 6) {
@@ -143,10 +153,7 @@ function validateShape(file, text, map) {
     fail('initiative-map.json: shape has more than two remaining human decisions');
   }
 
-  const successText = section(text, 'How to make this go better');
-  if (count(successText, /^\s*[-*]\s+/gm) < 3) {
-    fail(`${file}: "How to make this go better" needs at least three concrete recommendations`);
-  }
+
 }
 
 function validatePlan(file, text, map) {
@@ -218,10 +225,83 @@ try {
   map = {};
 }
 
-if (map.schema_version !== '0.4.0') warn(`initiative-map.json: expected schema_version 0.4.0, found ${map.schema_version || '<missing>'}`);
+if (map.schema_version !== '0.5.0') warn(`initiative-map.json: expected schema_version 0.5.0, found ${map.schema_version || '<missing>'}`);
 if (!map.initiative?.title) fail('initiative-map.json: missing initiative.title');
 if (!map.initiative?.slug) fail('initiative-map.json: missing initiative.slug');
 if (!map.initiative?.current_phase) fail('initiative-map.json: missing initiative.current_phase');
+
+const statuses = ['planned', 'active', 'paused', 'completed', 'cancelled'];
+const phases = ['intent', 'brainstorm', 'shape', 'plan', 'execution', 'reconciliation'];
+const status = map.initiative?.status;
+if (status == null) warn('initiative-map.json: lifecycle status not assessed');
+else if (!statuses.includes(status)) fail(`initiative-map.json: invalid initiative.status ${status}`);
+if (!phases.includes(map.initiative?.current_phase)) fail('initiative-map.json: invalid current_phase');
+if (map.schema_version === '0.5.0' && typeof map.initiative?.next_action !== 'string') {
+  fail('initiative-map.json: missing initiative.next_action');
+}
+for (const milestone of map.implementation?.milestones || []) {
+  if (!['planned', 'active', 'completed', 'cancelled'].includes(milestone.status)) {
+    fail(`initiative-map.json: invalid milestone status ${milestone.status}`);
+  }
+  if (milestone.status === 'completed' && !milestone.evidence?.length) {
+    fail(`initiative-map.json: completed milestone ${milestone.id} needs observed evidence`);
+  }
+}
+
+const closed = ['completed', 'cancelled'].includes(status);
+const closure = map.closure;
+if (closed || retirement) {
+  if (!closed) fail('Retirement requires completed or cancelled initiative status');
+  if (!closure?.summary?.trim()) fail('Closure requires a summary');
+  if (status === 'cancelled' && !closure?.reason?.trim()) fail('Cancellation requires a reason');
+  if (status === 'completed' && !closure?.evidence?.length) fail('Completion requires observed verification evidence');
+  const rows = closure?.reconciliation || [];
+  for (const claim of map.intent?.claims || []) {
+    if (!['core', 'supporting'].includes(claim.importance) || ['rejected', 'superseded'].includes(claim.status)) continue;
+    if (!rows.some((row) => row.claim_id === claim.id)) fail(`Closure missing reconciliation for ${claim.id}`);
+  }
+  for (const row of rows) {
+    if (!row.claim_id || !['delivered', 'changed', 'omitted', 'unresolved'].includes(row.disposition) || !row.evidence?.trim()) {
+      fail('Closure reconciliation requires claim_id, valid disposition, and evidence');
+    }
+    if (status === 'completed' && row.disposition === 'unresolved') fail(`Completion has unresolved intent ${row.claim_id}`);
+  }
+  if (rows.some((row) => row.disposition === 'unresolved') && !closure?.follow_ups?.length) {
+    fail('Unresolved intent requires durable follow-up or explicit cancellation decisions');
+  }
+  if (!Array.isArray(closure?.follow_ups)) fail('Closure requires follow_ups, even when empty');
+}
+
+if (retirement) {
+  const repository = map.implementation?.repository_snapshot?.root;
+  if (!repository || !fs.existsSync(repository)) fail('Retirement requires an existing repository root');
+  else {
+    const repo = fs.realpathSync(repository);
+    const folder = fs.realpathSync(root);
+    const inside = (base, target) => target.startsWith(`${base}${path.sep}`);
+    if (!inside(repo, folder)) fail('Initiative folder must be inside its repository');
+    const docs = closure?.documentation || [];
+    if (status === 'completed' && !docs.length) fail('Completed retirement requires durable documentation');
+    for (const doc of docs) {
+      const target = path.resolve(repo, doc);
+      if (path.isAbsolute(doc) || !fs.existsSync(target) || !fs.statSync(target).isFile()) {
+        fail(`Invalid durable documentation path: ${doc}`);
+        continue;
+      }
+      const actual = fs.realpathSync(target);
+      if (!inside(repo, actual) || actual === folder || inside(folder, actual)) fail(`Documentation must survive retirement: ${doc}`);
+    }
+    const files = closure?.retirement_files || [];
+    if (!files.includes('initiative-map.json')) fail('Removal list must include initiative-map.json');
+    for (const file of files) {
+      const target = path.resolve(folder, file);
+      if (path.isAbsolute(file) || !inside(folder, target) || !fs.existsSync(target) || !fs.lstatSync(target).isFile()) {
+        fail(`Invalid planning-file removal path: ${file}`);
+      } else if (!inside(folder, fs.realpathSync(target))) fail(`Removal path escapes initiative folder: ${file}`);
+    }
+  }
+  // Human authorization and semantic fidelity require conversation and code review; JSON cannot prove them.
+}
 
 for (const source of map.sources || []) {
   if (!source.id || !source.type || !source.location || !source.anchor || !source.authority) {
@@ -248,6 +328,7 @@ for (const [key, fallbackPath, validator] of artifactDefinitions) {
   }
 
   const relativePath = artifact.path || fallbackPath;
+  if (retirement) continue;
   if (artifact.status === 'current') {
     const text = read(relativePath);
     if (text) validator(relativePath, text, map);
@@ -256,13 +337,13 @@ for (const [key, fallbackPath, validator] of artifactDefinitions) {
   }
 }
 
-if (artifacts.implementation_plan?.status === 'current' && artifacts.shape_brief?.status !== 'current') {
+if (!retirement && artifacts.implementation_plan?.status === 'current' && artifacts.shape_brief?.status !== 'current') {
   fail('initiative-map.json: implementation plan is current while shape brief is not current');
 }
-if (artifacts.shape_brief?.status === 'current' && artifacts.intent_brief?.status !== 'current') {
+if (!retirement && artifacts.shape_brief?.status === 'current' && artifacts.intent_brief?.status !== 'current') {
   fail('initiative-map.json: shape brief is current while intent brief is not current');
 }
-if (artifacts.brainstorm?.status === 'current' && artifacts.intent_brief?.status !== 'current') {
+if (!retirement && artifacts.brainstorm?.status === 'current' && artifacts.intent_brief?.status !== 'current') {
   fail('initiative-map.json: brainstorm is current while intent brief is not current');
 }
 

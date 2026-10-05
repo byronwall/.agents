@@ -83,3 +83,10 @@ After feedback, respond with a short summary:
 ```
 
 Do not repost the complete brief in chat.
+
+## Lifecycle and closure
+
+Artifact invalidation changes freshness, not initiative lifecycle. Keep status separate from planning phases.
+Do not reopen completed or cancelled work without explicit user direction.
+For lifecycle updates or retirement, load `lifecycle-and-retirement.md`.
+Retirement reconciles stale plans against code; it does not require regenerating obsolete plans.

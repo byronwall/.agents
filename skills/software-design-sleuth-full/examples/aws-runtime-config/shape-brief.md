@@ -3,87 +3,65 @@ title: "AWS-backed runtime configuration — shape brief"
 slug: "aws-runtime-config"
 phase: shape
 status: current
-last_updated: "2026-08-11"
+last_updated: "2026-10-04"
 ---
 
-# AWS-backed runtime configuration — shape brief
+# Runtime configuration — what we are adding
 
-## Recommendation
+**Outcome:** Startup and runtime configuration changes survive restart after the move from Railway to AWS.
 
-Treat AWS as a pair of storage adapters behind the application's existing configuration lifecycle—not as the new shape of the application. Introduce a small application-facing boundary that can load and persist one validated configuration revision. Keep secret routing inside a coordinator so the rest of the application does not need to know which AWS product stores each field.
+**Primary flow:** Load → validate → change → persist → activate → restart with the saved values.
 
-Prove the behavior in three increasingly realistic environments: a deterministic in-memory source for application logic and failure cases, LocalStack for the AWS API contract, and one small real-AWS sandbox smoke test for IAM, KMS, account, and endpoint behavior. Keep the current TOML/environment path selectable during rollout.
-
-The material pushback is to **avoid beginning with IAM, deployment wiring, and two real AWS services at once**. That route would bundle application semantics, provider behavior, credentials, and operations into one slow feedback loop. The first useful slice should already demonstrate update → persist → restart using a local source.
-
-## Problem and appetite
-
-- **Problem:** The application needs centrally managed configuration that can change while running and survive restart after the move to AWS.
-- **Outcome:** One representative secret and non-secret setting can be read, validated, changed, persisted, activated, and recovered after restart.
-- **Appetite:** A bounded integration capability, not a general configuration platform.
-- **Not in this shape:** Automated secret rotation, multi-region replication, arbitrary schemas, a new administration UI, broad provider abstraction, or removal of every existing configuration source.
-
-## Core shape
+## Feature scope
 
 ```text
-startup / update request
-        ↓
-existing config parser + validator
-        ↓
-ConfigurationCoordinator
-  ├─ ParameterStorePort  ── fake | LocalStack | AWS
-  └─ SecretStorePort     ── fake | LocalStack | AWS
-        ↓
-validated configuration snapshot
-        ↓
-current application activation path
+Runtime configuration
+├── PLANNED ADDITIONS
+│   ├── Durable configuration lifecycle
+│   │   ├── Read and validate settings during startup
+│   │   ├── Persist accepted runtime changes
+│   │   └── Restore the same validated values after restart
+│   ├── Separate ordinary and secret storage
+│   │   ├── Ordinary parameters through Parameter Store
+│   │   ├── Secrets through Secrets Manager
+│   │   └── Activate only a complete saved configuration revision
+│   ├── Explain failures
+│   │   ├── Missing, denied, timeout, malformed, partial-write, stale cases
+│   │   └── Source and revision diagnostics without logging values
+│   └── Select configuration source
+│       ├── AWS source after its behavior and permissions are proven
+│       └── Existing TOML/environment path stays selectable for rollback
+└── OUTSIDE THIS SHAPE
+    ├── Automated secret rotation and multi-region replication
+    ├── General configuration platform or new administration UI
+    └── Broad provider framework or complete removal of existing sources
 ```
 
-The coordinator owns which fields are secret, the write order, version checks, and the rule for activating a new snapshot. The ports expose only the semantics the application needs: read named values, persist an expected revision, and return typed failures. They do not expose the full AWS SDK.
+## Behavior
 
-The first implementation uses one representative ordinary parameter and one secret. A persisted revision or manifest records which values belong to one coherent snapshot. If the current application guarantees one writer, the first slice may use a simpler version token. If concurrent writers are possible, compare-and-set behavior becomes part of the contract.
+| Situation | Expected result |
+| --- | --- |
+| Valid update | Persist the complete intended revision before activation. |
+| One storage write fails | Do not activate a partial configuration. Explain the failure. |
+| Application restarts | Load and validate the saved revision through the existing activation path. |
+| A stale writer submits a change | Apply the chosen revision policy; never assume independent writes are atomic. |
+| AWS access fails during rollout | Keep the prior source selectable; do not hide the selected source. |
+| Operator inspects diagnostics | Show source, revision, duration, and failure category without secret values. |
 
-## Current fit
+## Decisions and boundaries
 
-- **Reuse:** Existing TOML/environment decoding, validation, runtime mutation, and activation behavior.
-- **Add:** A coordinator, narrow parameter and secret ports, deterministic fakes, AWS adapters, and one source-selection setting.
-- **Avoid or replace:** The Railway-specific persistence hook becomes an adapter or temporary fallback. AWS SDK calls do not spread through configuration consumers.
+**Appetite:** One representative ordinary parameter and one secret. Keep existing parsing, validation, and runtime activation. This is a bounded integration, not a configuration platform.
 
-## How to make this go better
+**Key decision:** Prove update → persist → restart with local stores before provisioning AWS. This separates application behavior from provider and permission failures. Keep provider access behind a narrow application-owned boundary; configuration consumers should not depend on SDK details.
 
-- **Prove the lifecycle before touching AWS.** Run load, update, write failure, restart, and fallback behavior against deterministic local stores. This makes application errors reproducible in seconds.
-- **Separate provider fidelity from IAM fidelity.** Use LocalStack or another supported emulator to test SSM and Secrets Manager request/response behavior. Use a small AWS sandbox smoke test only for credentials, permissions, KMS, endpoint, and account-specific behavior.
-- **Introduce one external path at a time.** Prove a non-secret parameter first, then add secret routing without changing the application lifecycle. This prevents two provider integrations from hiding one another's failures.
-- **Make partial writes explicit.** Do not activate a new configuration until the whole intended revision is durable. Use a manifest/version record or another commit rule rather than assuming two service writes are atomic.
-- **Keep the old source selectable.** A configuration flag or source factory should allow TOML/environment startup while the AWS path is being proven and during rollback.
-- **Add diagnostics with the first real adapter.** Log source, revision, duration, and typed failure without logging values. A live integration that cannot explain itself is not ready to become authoritative.
+**Provider proof:** A deterministic local source must support named failures. Check provider protocol through LocalStack or another supported emulator after verifying its capabilities. Use a small real AWS sandbox check for IAM, KMS, account, and endpoint behavior. The emulator does not prove those permissions. Detailed rungs and rollout belong in the implementation plan.
 
-## First proof
+**Ownership:** One coordinator owns secret routing, revision handling, write order, and activation. A complete revision needs an explicit commit rule. The rule can be smaller with one writer; concurrent writers require a conflict policy.
 
-- **Question:** Can the current application lifecycle support a durable runtime update without depending on Railway or AWS?
-- **Proof:** One focused test harness starts the application with an in-memory configuration source, changes one ordinary and one secret field, recreates the configuration manager, and observes the same validated values.
-- **Observe:** Validation behavior, activation timing, revision handling, missing-key behavior, a failed second write, and restart recovery.
-- **Pass / fail:** Pass when the application never activates a partial revision, all named failures are deterministic, and the test runs without network or shared infrastructure. Fail if provider concepts leak into consumers or the lifecycle requires deployment to exercise.
-- **Deliberately excludes:** AWS credentials, IAM, KMS, production deployment, rotation, broad schema generalization, and cloud persistence.
+**First proof:** **Try:** Change one ordinary and one secret value through local stores, then recreate the configuration manager. Inject a failed second write. **Observe:** Restored values, activation timing, validation, and failure explanations. **Decide:** Proceed only if complete updates survive restart and partial updates never activate, without network or shared infrastructure. Otherwise, resolve the lifecycle boundary before AWS integration.
 
-## Rabbit holes and no-gos
+**Alternative:** If runtime updates are not needed, deployment-time materialization is smaller. Choose it only if a redeploy satisfies the actual workflow.
 
-- Building a generic configuration framework before one real setting works.
-- Treating SSM and Secrets Manager writes as one atomic provider transaction.
-- Reproducing the entire AWS SDK in mocks.
-- Using a live AWS account as the routine failure-injection environment.
-- Introducing account migration, new administration UI, rotation, and runtime persistence in one slice.
-- Logging raw configuration values for diagnostics.
+**Open choices:** Must the running application write secrets, or should an operator control those changes? Is there one writer, or must the first release protect against concurrent updates?
 
-## Serious alternative
-
-If runtime changes are rare and a redeploy is acceptable, deployment-time materialization is simpler and safer: an approved deployment job reads AWS values and starts the application with a complete snapshot. Select that path instead if the “update while running” behavior is merely inherited from Railway rather than a real product or operational requirement.
-
-## What still needs your input
-
-- Must the running application itself be allowed to write secrets, or should secret changes require an operator-controlled path?
-- Is there one configuration writer, or must the first release protect against concurrent updates?
-
-## Plan handoff
-
-The implementation plan should begin with the provider-free lifecycle proof, add Parameter Store through a shared contract suite, add secret routing as a separate slice, confirm real AWS permissions with one sandbox smoke test, and only then make the AWS source authoritative behind a reversible rollout switch.
+[Intent](intent-brief.md) · [Implementation plan](implementation-plan.md)

@@ -1,12 +1,14 @@
 {
-  "schema_version": "0.4.0",
+  "schema_version": "0.5.0",
   "initiative": {
     "title": "AWS-backed runtime configuration",
     "slug": "aws-runtime-config",
     "scale": "capability",
     "current_phase": "plan",
     "last_updated": "2026-08-11",
-    "summary": "Preserve startup and runtime configuration persistence while moving from Railway to AWS, with a fast local loop and a reversible provider integration."
+    "summary": "Preserve startup and runtime configuration persistence while moving from Railway to AWS, with a fast local loop and a reversible provider integration.",
+    "status": "planned",
+    "next_action": "Start the first proof when implementation is requested"
   },
   "artifacts": {
     "intent_brief": {
@@ -394,7 +396,7 @@
         "proof": "Provider-free lifecycle suite covers restart and partial failure.",
         "valid_intermediate_state": "The application can use the new coordinator locally while retaining the existing source.",
         "rollback": "Select the original source.",
-        "status": "ready"
+        "status": "planned"
       },
       {
         "id": "M2",
@@ -406,7 +408,7 @@
         "proof": "Shared contract passes against fake and LocalStack.",
         "valid_intermediate_state": "Parameter Store is integrated locally while secrets remain on the deterministic store.",
         "rollback": "Use the fake or original source.",
-        "status": "blocked-by-M1"
+        "status": "planned"
       },
       {
         "id": "M3",
@@ -418,7 +420,7 @@
         "proof": "Failure injection never exposes a mixed revision.",
         "valid_intermediate_state": "Both AWS services work locally through a reversible source selection.",
         "rollback": "Activate the prior committed revision or original source.",
-        "status": "blocked-by-M2"
+        "status": "planned"
       },
       {
         "id": "M4",
@@ -430,7 +432,7 @@
         "proof": "Tagged sandbox create/read/update/restart/cleanup and denied-path checks pass.",
         "valid_intermediate_state": "Real AWS is proven without making it authoritative in production.",
         "rollback": "No runtime cutover has occurred.",
-        "status": "blocked-by-M3"
+        "status": "planned"
       },
       {
         "id": "M5",
@@ -440,7 +442,7 @@
         "proof": "Staged read/update/restart and rollback are observed with diagnostics.",
         "valid_intermediate_state": "The AWS path is live for a representative slice while compatibility remains.",
         "rollback": "Change source selection and restart on the prior source.",
-        "status": "blocked-by-M4"
+        "status": "planned"
       },
       {
         "id": "M6",
@@ -450,7 +452,7 @@
         "proof": "Field-group migrations, outage tests, metrics, and compatibility-removal gate pass.",
         "valid_intermediate_state": "Each migrated group operates independently before the next group moves.",
         "rollback": "Restore prior source or prior committed revision within the agreed window.",
-        "status": "blocked-by-M5"
+        "status": "planned"
       }
     ],
     "cut_line": [
@@ -488,5 +490,6 @@
       "phase": "plan",
       "change": "Sequenced six valid intermediate systems with one material dependency introduced at a time."
     }
-  ]
+  ],
+  "closure": null
 }
