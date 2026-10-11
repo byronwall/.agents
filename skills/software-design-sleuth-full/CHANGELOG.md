@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.1 — Faster map updates and clearer validation
+
+- Add `scripts/update-map.mjs` for phase, status, next action, artifact status, and milestone status and evidence; it stamps `last_updated` and runs the validator.
+- Validator errors name the allowed milestone statuses, every missing milestone field, the `first_proof` shape, and the template to copy missing sections from.
+- A missing shape section no longer also reports each check inside it.
+- Document the milestone record in `references/implementation-planning.md`.
+
 ## 0.6.0 — Tree-based shaping
 
 - Replace the prose shape layout with a scope tree and compact behavior/decision view.

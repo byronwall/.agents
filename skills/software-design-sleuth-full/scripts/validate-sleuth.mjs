@@ -48,10 +48,12 @@ function section(text, heading) {
 }
 
 function requireHeadings(file, text, headings) {
-  for (const heading of headings) {
-    if (!text.match(new RegExp(`^## ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'm'))) {
-      fail(`${file}: missing "## ${heading}"`);
-    }
+  const missing = headings.filter(
+    (heading) => !text.match(new RegExp(`^## ${heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`, 'm'))
+  );
+  for (const heading of missing) fail(`${file}: missing "## ${heading}"`);
+  if (missing.length) {
+    fail(`${file}: needs these sections, in order: ${headings.map((heading) => `"## ${heading}"`).join(', ')}. Copy them from templates/${file}.`);
   }
 }
 
@@ -125,17 +127,23 @@ function validateShape(file, text, map) {
       fail(`${file}: missing ${label}`);
     }
   }
+  // A missing section is already reported; skip the checks inside it.
   const scope = section(text, 'Feature scope');
-  if (!/(?:├──|└──|\+--|\|--)/.test(scope)) {
-    fail(`${file}: Feature scope needs a nested capability tree`);
-  }
-  if (!/planned|add(?:itions)?|required|included/i.test(scope)) {
-    fail(`${file}: tree must identify the intended additions`);
+  if (scope) {
+    if (!/(?:├──|└──|\+--|\|--)/.test(scope)) {
+      fail(`${file}: Feature scope needs a nested capability tree`);
+    }
+    if (!/planned|add(?:itions)?|required|included/i.test(scope)) {
+      fail(`${file}: tree must identify the intended additions`);
+    }
   }
   const decisions = section(text, 'Decisions and boundaries');
-  for (const label of ['First proof', 'Try', 'Observe', 'Decide']) {
-    if (!new RegExp(`\\*\\*${label}:\\*\\*\\s*\\S`).test(decisions)) {
-      fail(`${file}: Decisions and boundaries needs ${label}`);
+  if (decisions) {
+    const missing = ['First proof', 'Try', 'Observe', 'Decide'].filter(
+      (label) => !new RegExp(`\\*\\*${label}:\\*\\*\\s*\\S`).test(decisions)
+    );
+    if (missing.length) {
+      fail(`${file}: Decisions and boundaries needs ${missing.join(", ")} (each as a bold "**Label:**" line)`);
     }
   }
   const wordCount = words(text);
@@ -147,7 +155,7 @@ function validateShape(file, text, map) {
     fail(`initiative-map.json: shape.success_moves must contain 3–6 concrete moves; found ${success.length}`);
   }
   if (!map.shape?.first_proof?.question || !map.shape?.first_proof?.artifact || !map.shape?.first_proof?.decision_rule) {
-    fail('initiative-map.json: shape.first_proof must include question, artifact, and decision_rule');
+    fail('initiative-map.json: shape.first_proof must include question, artifact, and decision_rule, as {"question": "...", "artifact": "...", "decision_rule": "..."}');
   }
   if ((map.shape?.open_decisions || []).length > 2) {
     fail('initiative-map.json: shape has more than two remaining human decisions');
@@ -202,10 +210,10 @@ function validatePlan(file, text, map) {
 
   for (const milestone of milestones) {
     const prefix = `initiative-map.json milestone ${milestone.id || milestone.title || '<unknown>'}`;
-    if (!milestone.outcome) fail(`${prefix}: missing outcome`);
-    if (!milestone.proof) fail(`${prefix}: missing proof`);
-    if (!milestone.valid_intermediate_state) fail(`${prefix}: missing valid_intermediate_state`);
-    if (!milestone.rollback) fail(`${prefix}: missing rollback/bypass`);
+    const missing = ['outcome', 'proof', 'valid_intermediate_state', 'rollback'].filter((key) => !milestone[key]);
+    if (missing.length) {
+      fail(`${prefix}: missing ${missing.join(', ')}. Each milestone needs id, title, outcome, dependencies_introduced, proof, valid_intermediate_state, rollback, and status; see "Milestone record" in references/implementation-planning.md`);
+    }
   }
 
   if (materialDependencies.length > 0 && milestones[0]?.dependencies_introduced?.length > 0) {
@@ -241,7 +249,7 @@ if (map.schema_version === '0.5.0' && typeof map.initiative?.next_action !== 'st
 }
 for (const milestone of map.implementation?.milestones || []) {
   if (!['planned', 'active', 'completed', 'cancelled'].includes(milestone.status)) {
-    fail(`initiative-map.json: invalid milestone status ${milestone.status}`);
+    fail(`initiative-map.json: invalid milestone status ${milestone.status} on ${milestone.id || milestone.title || '<unknown>'}; use planned, active, completed, or cancelled ("not-started" is only for shape.status and implementation.status)`);
   }
   if (milestone.status === 'completed' && !milestone.evidence?.length) {
     fail(`initiative-map.json: completed milestone ${milestone.id} needs observed evidence`);

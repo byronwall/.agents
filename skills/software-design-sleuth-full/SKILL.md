@@ -2,7 +2,7 @@
 name: software-design-sleuth
 description: Recover software intent, compare approaches, shape solutions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, initiative status, and retirement.
 metadata:
-  version: "0.6.0"
+  version: "0.6.1"
   compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
   category: product-design-planning
   artifacts: intent-brief, brainstorm, shape-brief, implementation-plan, initiative-map
@@ -328,6 +328,15 @@ node "${CLAUDE_SKILL_DIR}/scripts/validate-sleuth.mjs" \
   docs/intent/<initiative-slug>
 ```
 
+Change lifecycle fields in `initiative-map.json` with `scripts/update-map.mjs`, not hand-written JSON edits. It stamps `last_updated` and runs the validator:
+
+```bash
+node "${CLAUDE_SKILL_DIR}/scripts/update-map.mjs" docs/intent/<initiative-slug> \
+  --phase plan --artifact implementation_plan=current \
+  --milestone m1=completed --evidence "m1=PR #123; tests in src/foo.test.ts" \
+  --next "Start m2"
+```
+
 Use `scripts/audit-sleuth.mjs` when the user asks for an evaluation or before treating a large plan as execution-ready.
 For retirement, use the separate gate in `references/lifecycle-and-retirement.md` and run the validator with `--retirement`.
 Do not regenerate stale planning documents solely to delete them. Status mode makes no changes.
@@ -346,4 +355,4 @@ Do not regenerate stale planning documents solely to delete them. Status mode ma
 - `templates/` — canonical human and machine artifacts;
 - `examples/` — expected quality;
 - `evals/` — regression prompts and rubric;
-- `scripts/` — v0.3 migration, structural validation, and heuristic audit.
+- `scripts/` — v0.3 migration, lifecycle field updates (`update-map.mjs`), structural validation, and heuristic audit.

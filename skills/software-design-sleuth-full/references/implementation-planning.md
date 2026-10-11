@@ -95,3 +95,23 @@ Prefer one documented command that reproduces the first slice locally.
 - Security, permissions, and operational visibility are not forgotten.
 - Generalization follows a representative implementation.
 - Unknowns have decision outputs and fallback rules.
+
+## Milestone record
+
+Each entry in `initiative-map.json` `implementation.milestones` matches a milestone heading in `implementation-plan.md`, in the same order. A milestone's `status` is `planned`, `active`, `completed`, or `cancelled`; `not-started` belongs only to `shape.status` and `implementation.status`.
+
+```json
+{
+  "id": "m1",
+  "title": "Treemap renders one level from a saved view",
+  "outcome": "A user can add a treemap of revenue by category and see it restore after reload.",
+  "dependencies_introduced": [],
+  "proof": "Vitest for the layout plan; browser screenshot at 1280, 783, and 390 px.",
+  "valid_intermediate_state": "The chart type is registered but hidden from the picker until m2.",
+  "rollback": "Remove the registry entry; saved views without the type are unaffected.",
+  "status": "planned",
+  "evidence": []
+}
+```
+
+Add `evidence` entries (test names, screenshots, PR links) before setting `status` to `completed`.
