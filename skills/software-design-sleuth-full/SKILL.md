@@ -1,8 +1,8 @@
 ---
 name: software-design-sleuth
-description: Recover software intent, compare approaches, shape solutions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, initiative status, and retirement.
+description: Recover software intent, compare approaches, shape solutions, run rounds of product questions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, rounds of questions ("ask me N questions", "questions 5x3", "5 more"), initiative status, and retirement.
 metadata:
-  version: "0.6.1"
+  version: "0.7.0"
   compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
   category: product-design-planning
   artifacts: intent-brief, brainstorm, shape-brief, implementation-plan, initiative-map
@@ -30,6 +30,7 @@ Interpret `$ARGUMENTS` and the current request semantically. Supported modes:
 - `plan` — create a repository-grounded, proof-first implementation plan;
 - `full` — run every safe phase in order until a genuine human, access, or real-world boundary;
 - `update` — absorb new dictation, update state, invalidate stale downstream work, and continue;
+- `questions` — ask rounds of product questions that build on each other, absorb each round's answers, and refine the artifacts (`questions 5x3` is three rounds of five; `more` adds a round);
 - `audit` — review existing artifacts for readability, fidelity, buildability, and implementation success;
 - `status` — report initiative lifecycle, phase, next action, and retirement state without changing files;
 - `retire` — reconcile intent with code, update durable docs, and remove explicitly approved planning artifacts.
@@ -259,6 +260,14 @@ Before naming browser or database proof, check the local service and data target
 
 Do not create horizontal “frontend,” “backend,” “infrastructure,” or “tests” milestones without an independently useful outcome.
 
+## Question rounds
+
+Load `references/question-rounds.md` and `references/feedback-and-invalidation.md`.
+
+Use when the user asks for questions in any form: `questions 5x3`, "ask me 10 questions", "5 more", "grill me", or sets or rounds of questions. Default to three rounds of five. A requested count is a ceiling; ask fewer when fewer would change a decision, and stop early once the current phase is well defined.
+
+Each round after the first builds on the previous answers: implications of an answer, vague or hedged answers, conflicts, and checks of the agent's interpretation come before new topics. Use a structured question tool when one is available. Record every round in the initiative map before asking the next, and rewrite the human artifacts after the final round.
+
 ## Updates and downstream invalidation
 
 Load `references/feedback-and-invalidation.md`.
@@ -350,6 +359,7 @@ Do not regenerate stale planning documents solely to delete them. Status mode ma
 - `references/dependency-ladders.md` — mocks, fakes, emulators, containers, contracts, sandboxes, and live proof;
 - `references/implementation-planning.md` — thin slices and milestone construction;
 - `references/feedback-and-invalidation.md` — dictation updates and stale-artifact handling;
+- `references/question-rounds.md` — rounds of product questions that build on each other;
 - `references/lifecycle-and-retirement.md` — lifecycle, status views, approval, reconciliation, and artifact removal;
 - `references/foundations.md` — research and methodological basis;
 - `templates/` — canonical human and machine artifacts;

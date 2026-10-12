@@ -317,6 +317,20 @@ for (const source of map.sources || []) {
   }
 }
 
+if (map.question_rounds) {
+  const qr = map.question_rounds;
+  if (qr.status && !['in-progress', 'complete', 'stopped-early'].includes(qr.status)) {
+    fail(`initiative-map.json: question_rounds.status must be in-progress, complete, or stopped-early (got ${qr.status})`);
+  }
+  for (const round of qr.rounds || []) {
+    if (!Number.isInteger(round.round) || !Array.isArray(round.questions)) {
+      fail('initiative-map.json: every question_rounds.rounds entry needs an integer round and a questions array, as {"round": 1, "questions": [{"question": "..."}]}');
+    } else if (round.questions.some((item) => !item?.question)) {
+      fail(`initiative-map.json: question round ${round.round} has a question without question text`);
+    }
+  }
+}
+
 const artifacts = map.artifacts || {};
 const phaseOrder = ['intent', 'brainstorm', 'shape', 'plan'];
 const currentPhase = map.initiative?.current_phase;

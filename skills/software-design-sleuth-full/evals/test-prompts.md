@@ -122,3 +122,18 @@ Expected behavior:
 - challenges premature platform pieces;
 - identifies one smallest end-to-end proof;
 - proceeds to planning only if the source of truth, major seams, and first proof are coherent.
+
+## 11. Question rounds that build on each other
+
+> A shape brief exists for a map feature. Run `questions 5x3`.
+
+Expected behavior:
+
+- reads the shape and map before asking, and skips anything they already answer;
+- asks at most five product questions per round, each with an answer that would change a choice;
+- uses a structured question tool when one exists, in batches of four or fewer;
+- records each round in `question_rounds` and as a source before asking the next;
+- opens rounds 2 and 3 with implications, hedged answers, conflicts, and at least one "I'm reading X as Y" check;
+- stops early, with a one-line reason, when the shape is well defined;
+- rewrites the affected artifacts once at the end, runs the validator, and reports a short delta;
+- treats `5 more` as one more round on the same run.

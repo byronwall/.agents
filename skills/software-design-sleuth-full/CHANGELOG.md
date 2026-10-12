@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.7.0 — Question rounds
+
+- Add `questions` mode: rounds of product questions that build on each other (`questions 5x3`, "ask me 10 questions", `more`).
+- Later rounds ask first about implications, hedged answers, conflicts, and the agent's own interpretations before new topics.
+- Use a structured question tool when available, in batches of four; otherwise number questions continuously across rounds.
+- Record each round in an optional `question_rounds` map object and as a source; rewrite human artifacts after the final round.
+- Add `references/question-rounds.md`, a schema entry, a validator check, and an eval prompt.
+
 ## 0.6.1 — Faster map updates and clearer validation
 
 - Add `scripts/update-map.mjs` for phase, status, next action, artifact status, and milestone status and evidence; it stamps `last_updated` and runs the validator.

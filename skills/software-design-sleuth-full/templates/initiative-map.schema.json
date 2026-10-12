@@ -166,7 +166,44 @@
         }
       }
     },
-    "history": {"type": "array"}
+    "history": {"type": "array"},
+    "question_rounds": {
+      "type": "object",
+      "properties": {
+        "focus": {"type": ["string", "null"]},
+        "per_round": {"type": "integer", "minimum": 1},
+        "planned_rounds": {"type": "integer", "minimum": 1},
+        "status": {"enum": ["in-progress", "complete", "stopped-early"]},
+        "rounds": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["round", "questions"],
+            "properties": {
+              "round": {"type": "integer", "minimum": 1},
+              "theme": {"type": "string"},
+              "source": {"type": "string"},
+              "questions": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "required": ["question"],
+                  "properties": {
+                    "n": {"type": "integer"},
+                    "question": {"type": "string"},
+                    "answer": {"type": ["string", "null"]},
+                    "effect": {"type": ["string", "null"]}
+                  },
+                  "additionalProperties": true
+                }
+              }
+            },
+            "additionalProperties": true
+          }
+        }
+      },
+      "additionalProperties": true
+    }
   },
   "$defs": {
     "artifact": {

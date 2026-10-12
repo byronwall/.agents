@@ -1,6 +1,6 @@
 # Software Design Sleuth — Intent to Proof
 
-Version 0.6.1
+Version 0.7.0
 
 A scale-aware Agent Skill that turns messy transcripts, notes, repositories, and iterative dictation into a connected planning system:
 
