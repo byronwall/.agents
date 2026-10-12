@@ -31,24 +31,25 @@ Put this before the substantive work.
 
 Continue only when:
 
-- the exact repository is accessible;
-- the owner and repository name match the full URL;
-- the required branch or ref is visible;
+- the exact repository or an explicitly permitted source packet is accessible;
+- the owner and repository name match the full URL or packet manifest;
+- the required branch, ref, or packet baseline can be identified;
 - the required source and documents are available;
 - the requested task is possible with the active tools;
-- any required write capability exists.
+- required write capability exists, or the prompt permits a complete read-only output fallback.
 
-Record the inspected branch, ref, or commit when available.
+Record the inspected branch, ref, or commit when available. If Codex supplies a source packet, identify its baseline and included paths. Use it when the prompt explicitly permits that fallback. State its coverage limits and whether it can run tests.
 
 ### NO-GO
 
 Stop and report the blocker when:
 
-- the repository is unavailable or is the wrong repository;
+- the source belongs to the wrong repository;
+- the repository is unavailable and no permitted source packet supplies the required evidence;
 - a required private repository is not authorized;
-- a new repository has not finished indexing;
-- the required branch, file, dataset, or prior artifact is absent;
-- the prompt requests mutation but the environment is read-only;
+- repository indexing prevents access and no permitted source packet supplies the required evidence;
+- required source, data, or prior artifacts are absent from both the repository and any permitted source packet;
+- the prompt requires mutation, write capability is absent, and no read-only output fallback is permitted;
 - instructions conflict in a way that changes the result;
 - a success metric cannot be evaluated;
 - work would require guessing a material product decision.
@@ -188,6 +189,16 @@ Name the exact ChatGPT Pro output. Include:
 
 Require a compact final status. It should list access status, files read, checks run, deliverables, unresolved blockers, and assumptions.
 
+### When Codex will collect the result autonomously
+
+Specify the artifacts needed for local integration. For substantial research, request a report, source list, and recommendations with stable IDs. Add comparison tables, proposed document changes, or a proof plan only when useful.
+
+Ask for downloadable files with clear names. For several files, request a ZIP plus standalone companions and a manifest. Require source citations, explicit unanswered questions, and separation of completed checks from proposed checks.
+
+Ask Pro to link every output in its final response. If file creation is unavailable, require complete content in the response. Codex can then save it locally and record that fallback.
+
+Tell Pro that Codex will review and integrate the results. Keep local Git and PR duties out of Pro's research assignment. Define which missing evidence should cause a targeted follow-up and which open choices can remain for human review.
+
 ## 11. Mutation and commit gate
 
 Use only when the user explicitly requests mutation.
@@ -209,7 +220,7 @@ Before a commit, require:
 - the exact commit subject or its naming rule;
 - verification of the resulting commit and final status.
 
-Treat commit and push as separate permissions. Do not add a push unless the user requested it.
+Treat commit and push as separate permissions. Include them only when covered by the user's request. A full-process request includes Codex's scoped push for the review PR; it does not require Pro to push.
 
 ### Read-only fallback
 

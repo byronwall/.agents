@@ -1,4 +1,4 @@
 interface:
-  display_name: "Prepare ChatGPT Pro Repo Prompt"
-  short_description: "Create grounded prompts for repository reviews"
-  default_prompt: "Use $prepare-chatgpt-pro-repo-prompt to create a copy-ready ChatGPT Pro prompt for this repository."
+  display_name: "ChatGPT Pro Repository Handoff"
+  short_description: "Prepare Pro prompts or run research through a PR"
+  default_prompt: "Use $prepare-chatgpt-pro-repo-prompt to prepare this repository handoff, or run the full Pro process when I request autonomous work."

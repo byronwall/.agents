@@ -1,11 +1,29 @@
 ---
 name: prepare-chatgpt-pro-repo-prompt
-description: Create copy-ready, repository-grounded prompts for ChatGPT Pro to review, research, evaluate, or plan work in a software repository. Use when a user wants to hand a GitHub repository to ChatGPT Pro, Deep Research, or ChatGPT agent. Do not use when the user wants Codex to do the repository work directly.
+description: Prepare repository-grounded ChatGPT Pro prompts or run the full autonomous Pro process through submission, later collection, follow-up questions, result integration, and a review PR. Use for repository work handed to ChatGPT Pro, Deep Research, or ChatGPT agent, including requests to run that handoff autonomously. Do not use for direct Codex work that does not involve a Pro handoff.
 ---
 
-# Prepare a ChatGPT Pro Repository Prompt
+# Prepare or Run a ChatGPT Pro Repository Handoff
 
-Produce a prompt that lets ChatGPT Pro begin with correct repository context. Make the prompt detailed enough to run without a second briefing.
+Prepare a prompt that gives ChatGPT Pro correct repository context. When requested, own the process through a review PR.
+
+## Choose the extent of the work
+
+Keep the task mode separate from how much of the process Codex will run.
+
+- **Prompt only:** Requests to prepare, draft, or write a prompt end with the saved prompt and its link.
+- **Submit only:** An explicit request to send the prompt ends after verified submission, unless later steps are also requested.
+- **Full process:** In a Pro handoff, “run autonomously,” “handle the whole thing,” or similar language selects the complete process.
+
+The full process is: prepare prompt → submit to Pro → check after about one hour → collect results → follow up if needed → integrate results → open a PR.
+
+For full mode, read [the autonomous workflow](references/autonomous-workflow.md) before submission. That reference defines persistence, recovery, follow-up limits, and completion checks.
+
+A full-process request authorizes these steps within the requested topic, including scoped commits and the push needed for the PR. It also authorizes sending the prompt, necessary source context, and bounded follow-up questions to Pro. Do not ask for permission again at each step. Apply any narrower user limits.
+
+For research, review, or planning, integrate results into the relevant repository documents. Application implementation requires that scope in the request. The default endpoint is an open review PR. Merging, deployment, and unrelated changes need separate authorization.
+
+An update to this skill does not start a research run. Only operate a live run when the current request calls for one.
 
 ## Ground the prompt first
 
@@ -31,7 +49,7 @@ Classify the requested handoff before writing the prompt.
 - **Artifact production:** Create a report, brief, plan, or other named deliverable.
 - **Mutation:** Change files or Git state only when the user explicitly requests it.
 
-Do not convert a review into implementation. Do not add commit, push, branch, or pull-request instructions without user authorization.
+Do not convert a review into implementation. In full mode, Codex owns local integration and the PR. Keep Pro focused on its assigned task. Prompt-only work does not authorize sending messages or changing Git state.
 
 ## Build the prompt
 
@@ -68,15 +86,19 @@ If the repository is not writable, provide the complete prompt in the response. 
 
 ## Handle GitHub access correctly
 
-ChatGPT can read connected GitHub repositories. The GitHub app is read-only. Do not promise that ChatGPT Pro can write or commit through that connection.
+Use connected GitHub access when available. Check the active tools; do not assume a repository connection provides a writable checkout.
 
-When the user requests file changes or commits, add a capability preflight:
+If Pro cannot access the selected ref, provide an authorized source packet or report the access limit. A local file is not visible to Pro until uploaded or otherwise made accessible. See the autonomous workflow for packet guidance.
+
+When Pro is assigned file changes or commits, add a capability preflight:
 
 1. Confirm that the active environment has a writable repository checkout.
 2. Confirm the exact branch and allowed paths.
 3. Continue with mutation only when both checks pass.
 4. Otherwise, return the complete artifact or patch in the response.
 5. State clearly that no file or commit was created.
+
+This preflight applies to Pro's assignment. Codex can still integrate returned research locally when full mode authorizes that work.
 
 ## Preserve repository safety
 
@@ -99,4 +121,6 @@ Before delivery, confirm all items below.
 - Mutation instructions match the user's authorization and available capability.
 - The prompt contains no unresolved placeholders.
 
-Return the new Markdown file link and a short summary. Include the full prompt in the response only when the user requests it or file creation fails.
+For prompt-only work, return the Markdown file link and a short summary. Include the full prompt only when requested or file creation fails.
+
+For full mode, keep working until the [completion checks](references/autonomous-workflow.md#complete-the-run) pass or a stated blocker requires user action. Saving or submitting the prompt is an intermediate step.
