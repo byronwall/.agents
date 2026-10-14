@@ -33,7 +33,7 @@ Read [references/transcript-evidence.md](references/transcript-evidence.md) when
 5. Work through the concrete cases, relevant dimensions, and alternatives the material actually supports. Let examples expose the underlying distinction.
 6. Separate technical possibility, a working artifact, practical usefulness, operational readiness, and product value when those levels matter.
 7. Give a provisional recommendation or useful model when the evidence earns one. Include the boundary where it stops working.
-8. Draft compact prose. Use headings only when they help navigation; use lists for genuine sets of options, criteria, or steps. Preserve asymmetry when one example or unresolved thread deserves more space.
+8. Draft compact prose. Use headings only when they help navigation; use lists for genuine sets of options, criteria, or steps. Preserve asymmetry when one example or unresolved thread deserves more space. Size the text to the work: a ticket for a few hours of work reads in a minute, skips acceptance criteria when the change is obvious, and does not restate one end state as user flow, system flow, and exit criteria. Byron's most common revision is "a bit verbose", so draft short and let him ask for more. For Slack, use bullets and bold instead of tables.
 9. Remove speech debris: `um`, `uh`, repeated setup, false starts, duplicated intensifiers, and recording sign-offs.
 10. Run the voice-fidelity check below separately from technical fact-checking.
 
