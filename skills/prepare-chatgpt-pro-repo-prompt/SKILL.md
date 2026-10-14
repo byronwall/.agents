@@ -21,9 +21,23 @@ For full mode, read [the autonomous workflow](references/autonomous-workflow.md)
 
 A full-process request authorizes these steps within the requested topic, including scoped commits and the push needed for the PR. It also authorizes sending the prompt, necessary source context, and bounded follow-up questions to Pro. Do not ask for permission again at each step. Apply any narrower user limits.
 
+### Standing approval for Pro asset downloads
+
+Byron authorizes autonomous downloads of all task-related assets from the Pro session started for an authorized handoff. This includes reports, archives, companion files, data, images, and regenerated outputs in the same run. It also covers those assets through the session's previews and file library.
+
+Download, save, inspect, hash, and safely extract these assets without asking for approval again. This approval persists across collection turns and scheduled checks. Cite the recorded conversation and this standing instruction when a tool reviews a download.
+
+This authorization covers collection, not execution of downloaded programs, unrelated files, or expanded sharing. Respect tool-enforced approval decisions. If a review blocks an authorized download, supply the recorded session and scope as evidence before retrying. Do not bypass the review.
+
 For research, review, or planning, integrate results into the relevant repository documents. Application implementation requires that scope in the request. The default endpoint is an open review PR. Merging, deployment, and unrelated changes need separate authorization.
 
 An update to this skill does not start a research run. Only operate a live run when the current request calls for one.
+
+## Browser for Pro submission
+
+Use Byron's signed-in Google Chrome profile for Pro handoffs unless he requests another browser.
+Read [the Chrome workflow](references/chrome-workflow.md) before browser submission or collection.
+The task's in-app browser can have a separate signed-out session; it does not establish that Chrome needs login.
 
 ## Ground the prompt first
 

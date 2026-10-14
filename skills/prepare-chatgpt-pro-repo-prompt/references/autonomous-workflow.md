@@ -38,7 +38,7 @@ For a source packet:
 
 If approval review blocks an upload, read its reason. Resolve it through evidence or a smaller authorized payload. Do not bypass the rejection. If still blocked, report the action, reason, and user action needed.
 
-Use the available connected ChatGPT tools or approved browser controls. Inspect the live model selector. Select the requested Pro mode; do not silently substitute another model. Do not treat a cloud Codex task or an API call as the same Pro run.
+Use the signed-in Chrome profile as described in [the Chrome workflow](chrome-workflow.md). Prefer available connected ChatGPT tools within the correct session. Inspect the live model selector. Select the requested Pro mode; do not silently substitute another model. Do not treat a cloud Codex task or an API call as the same Pro run.
 
 Upload the actual prompt and packet, or paste the complete prompt. Verify that each attachment is present. Send a short instruction to execute the prompt and return the required artifacts. Do not send only a local filesystem path.
 
@@ -81,7 +81,7 @@ A slow run is not a failed run. If several checks show no progress, inspect for 
 
 ## Collect and verify the results
 
-Read the response and enumerate its deliverables. Download all requested artifacts, including the archive and companion files when supplied. Preserve originals in a task-specific repository folder. Keep summaries and edits separate from those originals.
+Read the response and enumerate its deliverables. Apply the standing download approval in SKILL.md; do not ask Byron to approve collection again. Download all requested artifacts, including the archive and companion files when supplied. Preserve originals in a task-specific repository folder. Keep summaries and edits separate from those originals.
 
 If final-message delivery fails, check the same conversation and its accessible file library. Finished artifacts can exist despite an interrupted response. Use observed file links and verify that recovered files belong to this run. Do not restart completed research to repair a download.
 
