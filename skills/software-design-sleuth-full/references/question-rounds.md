@@ -73,7 +73,7 @@ Title each round with one short line, such as **Round 2 of 3: behavior and limit
 ## After each round
 
 1. **Read the answers carefully.** An answer may redirect the work, reject the premise of the question, or ask for something else entirely: a comparison, a sample, research, or a different approach. Do that first. When an answer asks for a decision between approaches, compare them with `consider-contrast` when it is available.
-2. **Record the round in the initiative map.** Add one source for the round (`type: "question-round"`, the location as the conversation, and the anchor as the round number) and an entry in `question_rounds`. Update intent claims with their strength and time horizon, as described in `feedback-and-invalidation.md`. An answer of "use your recommendation" or "idk" becomes a provisional default, not a confirmed requirement.
+2. **Record the round in the initiative map.** Add one source for the round (`type: "question-round"`, the location as the conversation, and the anchor as the round number) and an entry in `question_rounds`. Update intent claims with their strength and time horizon, as described in `feedback-and-invalidation.md`. Make these edits with `scripts/update-map.mjs --add` and `--set` (see SKILL.md), not a hand-written JSON script. An answer of "use your recommendation" or "idk" becomes a provisional default, not a confirmed requirement.
 3. **Write a short delta in chat:** what the answers changed, and how you read any answer you had to interpret. This is the understanding check the user relies on. Keep it to a few bullets.
 4. **Continue or finish.** Ask the next round right away when rounds remain and the work is not yet well defined.
 

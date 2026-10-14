@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 — Map edits without scripts
+
+- `update-map.mjs` gains `--add <path>=<json>` (append to any list, merging an item whose id exists) and `--set <path>=<json>` (replace any field), with id-based path segments, `--no-validate`, and a `--help` that no longer crashes.
+- Standing rule 7 now says to use the structured question tool whenever the skill asks the user questions, not only in `questions` mode.
+
 ## 0.7.0 — Question rounds
 
 - Add `questions` mode: rounds of product questions that build on each other (`questions 5x3`, "ask me 10 questions", `more`).

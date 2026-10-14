@@ -2,7 +2,7 @@
 name: software-design-sleuth
 description: Recover software intent, compare approaches, shape solutions, run rounds of product questions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, rounds of questions ("ask me N questions", "questions 5x3", "5 more"), initiative status, and retirement.
 metadata:
-  version: "0.7.0"
+  version: "0.7.1"
   compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
   category: product-design-planning
   artifacts: intent-brief, brainstorm, shape-brief, implementation-plan, initiative-map
@@ -87,7 +87,7 @@ Retirement approval does not authorize code deletion, deployment, ticket deletio
 4. **The method stays backstage.** Human artifacts should not expose evidence ledgers, design-space matrices, generated IDs, scoring dashboards, or source inventories.
 5. **Repository reality is not product intent.** Code tells you what exists, what is reusable, and what is expensive. It does not decide what the user wants.
 6. **Research cannot silently overwrite intent.** It may challenge a hypothesis or reveal a better implementation path. During shaping and planning, verify current provider, emulator, and platform behavior from primary documentation when it could change the proof strategy.
-7. **Ask humans only for human judgments.** Research facts, test observable behavior, and default reversible details. Ask about purpose, priority, audience, policy, appetite, or irreversible direction.
+7. **Ask humans only for human judgments.** Research facts, test observable behavior, and default reversible details. Ask about purpose, priority, audience, policy, appetite, or irreversible direction. Whenever you ask the user questions, in any mode, use the structured question tool (`AskUserQuestion` in Claude Code), up to four questions per call; write them in chat only when no such tool exists. See `references/question-rounds.md#asking`.
 8. **Prefer valid intermediate systems.** Every substantial milestone should leave the system runnable, testable, and understandable.
 9. **Prefer a fast local loop.** Live infrastructure should not be the primary development or failure-testing loop when a faithful local seam is practical.
 10. **Separate risks instead of bundling them.** Product behavior, application logic, provider protocol, credentials, deployment wiring, and operational resilience are different proofs.
@@ -337,13 +337,17 @@ node "${CLAUDE_SKILL_DIR}/scripts/validate-sleuth.mjs" \
   docs/intent/<initiative-slug>
 ```
 
-Change lifecycle fields in `initiative-map.json` with `scripts/update-map.mjs`, not hand-written JSON edits. It stamps `last_updated` and runs the validator:
+Edit `initiative-map.json` with `scripts/update-map.mjs`, not hand-written JSON scripts. It stamps `last_updated` and runs the validator. Shortcuts cover lifecycle fields; `--add <path>=<json>` appends to any list (claims, sources, history, question rounds, open decisions) and `--set <path>=<json>` replaces any field. A path segment that names an item's id selects that item. Run it with `--help` for every option.
 
 ```bash
 node "${CLAUDE_SKILL_DIR}/scripts/update-map.mjs" docs/intent/<initiative-slug> \
   --phase plan --artifact implementation_plan=current \
   --milestone m1=completed --evidence "m1=PR #123; tests in src/foo.test.ts" \
   --next "Start m2"
+node "${CLAUDE_SKILL_DIR}/scripts/update-map.mjs" docs/intent/<initiative-slug> \
+  --set intent.claims.C2.confidence=high \
+  --add intent.claims='{"id":"C6","statement":"...","kind":"decision","sources":["qa-round-2"],"confidence":"high"}' \
+  --add sources='{"id":"qa-round-2","type":"question-round","location":"conversation","anchor":"2"}'
 ```
 
 Use `scripts/audit-sleuth.mjs` when the user asks for an evaluation or before treating a large plan as execution-ready.
