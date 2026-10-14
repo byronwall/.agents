@@ -1,0 +1,92 @@
+digraph G {
+  // Standalone before/after starter. Replace the title, subtitle, labels, and
+  // color semantics with terms from the implementation being explained.
+  graph [
+    rankdir=TB,
+    newrank=true,
+    bgcolor="white",
+    pad="0.30",
+    nodesep="0.30",
+    ranksep="0.45",
+    splines=polyline,
+    fontname="Arial",
+    size="12.0,7.8!",
+    labelloc="t",
+    labeljust="c",
+    label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2" CELLPADDING="2">
+      <TR><TD><FONT POINT-SIZE="19"><B>Process name: before vs. after</B></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="11" COLOR="#475467">One-line statement of the practical change and why it matters</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fillcolor="#F6F8FC",
+    color="#8A94A6",
+    penwidth=1.2,
+    fontname="Arial",
+    fontsize=10.5,
+    margin="0.16,0.10"
+  ];
+
+  edge [
+    color="#667085",
+    penwidth=1.3,
+    arrowsize=0.72,
+    fontname="Arial",
+    fontsize=9
+  ];
+
+  subgraph cluster_before {
+    label="BEFORE";
+    color="#C25C5C";
+    fontcolor="#7A271A";
+    fontsize=11;
+    style="rounded";
+    margin=18;
+
+    BEFORE_ENTRY [label="Comparable entry point", fillcolor="#E8F0FE", color="#4C7BD9"];
+    BEFORE_STEP [label="Previous behavior"];
+    BEFORE_RISK [label="Problematic consequence", fillcolor="#FFF0F0", color="#C25C5C", penwidth=1.6];
+    BEFORE_RESULT [label="Previous outcome", shape=note, fillcolor="#FDECEC", color="#B94A48"];
+
+    BEFORE_ENTRY -> BEFORE_STEP -> BEFORE_RISK -> BEFORE_RESULT;
+  }
+
+  subgraph cluster_after {
+    label="AFTER";
+    color="#4C956C";
+    fontcolor="#285D3B";
+    fontsize=11;
+    style="rounded";
+    margin=18;
+
+    AFTER_ENTRY [label="Comparable entry point", fillcolor="#E8F0FE", color="#4C7BD9"];
+    AFTER_STEP [label="Changed behavior", fillcolor="#EAF7EF", color="#4C956C"];
+    AFTER_GATE [label="Important decision?", shape=diamond, fillcolor="#FFF7E8", color="#C68A25"];
+    AFTER_RESULT [label="Corrected outcome", shape=note, fillcolor="#EAF7EF", color="#4C956C", penwidth=1.6];
+
+    AFTER_ENTRY -> AFTER_STEP -> AFTER_GATE;
+    AFTER_GATE -> AFTER_RESULT [label="yes"];
+  }
+
+  // Align genuinely comparable points. Render immediately after adding ranks;
+  // cross-cluster constraints can destabilize Graphviz layouts.
+  BEFORE_ENTRY -> AFTER_ENTRY [style=invis];
+  { rank=same; BEFORE_ENTRY; AFTER_ENTRY }
+  { rank=same; BEFORE_RESULT; AFTER_RESULT }
+
+  LEGEND [shape=plain, label=<<TABLE BORDER="0" CELLBORDER="1" COLOR="#D0D5DD" CELLSPACING="0" CELLPADDING="5">
+    <TR>
+      <TD BGCOLOR="#E8F0FE">Blue: shared entry or selection</TD>
+      <TD BGCOLOR="#FFF7E8">Amber: decision or transition</TD>
+      <TD BGCOLOR="#FDECEC">Red: problematic outcome</TD>
+      <TD BGCOLOR="#EAF7EF">Green: corrected behavior or outcome</TD>
+    </TR>
+  </TABLE>>];
+
+  BEFORE_RESULT -> LEGEND [style=invis];
+  AFTER_RESULT -> LEGEND [style=invis];
+  { rank=sink; LEGEND }
+}

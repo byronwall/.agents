@@ -1,0 +1,4 @@
+interface:
+  display_name: "Create macOS Finder Quick Action"
+  short_description: "Package scripts as Finder context-menu actions"
+  default_prompt: "Use $create-macos-finder-quick-action to turn this script into a Finder Quick Action."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Diagram-Led Technical Brief"
+  short_description: "Create, review, and revise clear technical diagrams"
+  default_prompt: "Use $diagram-led-technical-brief to create, review, or revise this technical diagram and its supporting brief."

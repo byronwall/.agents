@@ -1,0 +1,79 @@
+digraph G {
+  // Example palette only: neutral + blue, amber, red, and green families.
+  // Re-select or expand these colors to fit the application and the diagram's
+  // actual recurring categories. Prefer shades within a family before adding
+  // hues, and do not assign a new hue merely because a node is a new step.
+  graph [
+    rankdir=TB,
+    bgcolor="white",
+    pad="0.28",
+    nodesep="0.30",
+    ranksep="0.44",
+    splines=ortho,
+    fontname="Arial",
+    size="7.0,9.2!",
+    labelloc="t",
+    labeljust="c",
+    label=<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="2" CELLPADDING="2">
+      <TR><TD><FONT POINT-SIZE="18"><B>Practical process or dependency title</B></FONT></TD></TR>
+      <TR><TD><FONT POINT-SIZE="10" COLOR="#475467">One-line takeaway that keeps this image understandable when shared alone</FONT></TD></TR>
+    </TABLE>>
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fillcolor="#F6F8FC",
+    color="#8A94A6",
+    penwidth=1.2,
+    fontname="Arial",
+    fontsize=11,
+    margin="0.15,0.10"
+  ];
+
+  edge [
+    color="#667085",
+    penwidth=1.3,
+    arrowsize=0.72,
+    fontname="Arial",
+    fontsize=9
+  ];
+
+  PROMISE [label="Practical promise or end state", fillcolor="#E8F0FE", color="#4C7BD9", penwidth=1.6];
+  APP [label="Application or user surface", fillcolor="#F2F6FD", color="#7894C7"];
+  CODE [label="Developer-owned source"];
+  STORE [label="Durable state", shape=cylinder, fillcolor="#FFF7E8", color="#C68A25"];
+  MODEL [label="Internal model"];
+  TRANSLATE [label="Translation boundary", fillcolor="#E2ECFA", color="#315FAD", penwidth=1.6];
+  EXECUTE [label="Execution"];
+  DEPLOY [label="Deploy or materialize", fillcolor="#FFF0F0", color="#C25C5C", penwidth=1.6];
+  READY [label="Usable outcome", fillcolor="#EAF7EF", color="#4C956C"];
+  RISK [label="Concrete failure or stale-state risk", fillcolor="#FFF1D6", color="#B96B10"];
+  ASK [label="Decision, contract, or coordination ask", fillcolor="#FDECEC", color="#B94A48", penwidth=1.6];
+  LEGEND [shape=plain, label=<<TABLE BORDER="0" CELLBORDER="1" COLOR="#D0D5DD" CELLSPACING="0" CELLPADDING="5">
+    <TR>
+      <TD BGCOLOR="#E8F0FE">Blue: primary boundary or action</TD>
+      <TD BGCOLOR="#FFF7E8">Amber: state or risk</TD>
+      <TD BGCOLOR="#EAF7EF">Green: usable outcome</TD>
+      <TD BGCOLOR="#FDECEC">Red: decision or unresolved ask</TD>
+    </TR>
+  </TABLE>>];
+
+  PROMISE -> APP;
+  PROMISE -> CODE;
+  APP -> STORE;
+  APP -> MODEL;
+  STORE -> MODEL;
+  MODEL -> TRANSLATE;
+  TRANSLATE -> EXECUTE;
+  EXECUTE -> DEPLOY;
+  DEPLOY -> READY;
+  READY -> APP [constraint=false];
+  TRANSLATE -> CODE [constraint=false];
+  DEPLOY -> RISK;
+  RISK -> ASK;
+  ASK -> LEGEND [style=invis];
+
+  { rank=same; APP; CODE }
+  { rank=sink; LEGEND }
+}
