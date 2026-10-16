@@ -1,0 +1,4 @@
+interface:
+  display_name: "Handoff to Claude Desktop"
+  short_description: "Start work in the correct Claude Desktop project"
+  default_prompt: "Use $handoff-to-claude-desktop to hand this work to Claude Desktop in the named project and verify that it started."

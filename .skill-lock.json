@@ -1,6 +1,15 @@
 {
   "version": 3,
   "skills": {
+    "gh-stack": {
+      "source": "github/gh-stack",
+      "sourceType": "github",
+      "sourceUrl": "https://github.com/github/gh-stack.git",
+      "skillPath": "skills/gh-stack/SKILL.md",
+      "skillFolderHash": "bde7bcf5a96697d31aa55b33565fa0ff002167ca",
+      "installedAt": "2026-10-16T14:17:20Z",
+      "updatedAt": "2026-10-16T14:17:20Z"
+    },
     "srcly-code-quality": {
       "source": "byronwall/srcly",
       "sourceType": "github",
@@ -16,26 +25,11 @@
       "sourceUrl": "https://github.com/mattpocock/skills.git",
       "skillPath": "skills/engineering/wayfinder/SKILL.md",
       "skillFolderHash": "8ec0462658381bd1606d3f9db14ffc67df6a2a43",
-      "pluginName": "mattpocock-skills",
       "installedAt": "2026-09-09T02:45:06.894Z",
       "updatedAt": "2026-09-09T02:45:06.894Z"
     }
   },
   "dismissed": {
     "findSkillsPrompt": true
-  },
-  "lastSelectedAgents": [
-    "amp",
-    "cline",
-    "codex",
-    "cursor",
-    "droid",
-    "gemini-cli",
-    "github-copilot",
-    "kilo",
-    "kimi-code-cli",
-    "opencode",
-    "warp",
-    "zed"
-  ]
+  }
 }
