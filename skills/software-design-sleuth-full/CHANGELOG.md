@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.2 — Required map shapes and overlap check
+
+- SKILL.md lists the source, `first_proof`, and `fast_local_loop` shapes the validator requires, after three runs failed on them.
+- Phase 3 compares the plan's modules with open PRs and asks the user to order initiatives that share core files.
+
 ## 0.7.1 — Map edits without scripts
 
 - `update-map.mjs` gains `--add <path>=<json>` (append to any list, merging an item whose id exists) and `--set <path>=<json>` (replace any field), with id-based path segments, `--no-validate`, and a `--help` that no longer crashes.

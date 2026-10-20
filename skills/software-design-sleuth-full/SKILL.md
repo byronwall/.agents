@@ -2,7 +2,7 @@
 name: software-design-sleuth
 description: Recover software intent, compare approaches, shape solutions, run rounds of product questions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, rounds of questions ("ask me N questions", "questions 5x3", "5 more"), initiative status, and retirement.
 metadata:
-  version: "0.7.1"
+  version: "0.7.2"
   compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
   category: product-design-planning
   artifacts: intent-brief, brainstorm, shape-brief, implementation-plan, initiative-map
@@ -55,6 +55,16 @@ docs/intent/<initiative-slug>/
 If `initiative-map.json` is absent but a v0.3 `intent-map.json` exists, migrate it non-destructively with `scripts/migrate-v0.3.mjs`. Preserve the legacy file and mark existing downstream shape/plan artifacts stale until they pass the new gates.
 
 Human artifacts must be understandable without opening the JSON.
+
+Shapes the validator requires (agents tripped on each of these in three separate runs):
+
+```json
+{"sources": [{"id": "S1", "type": "transcript|repo|doc|qa", "location": "path or URL", "anchor": "line, heading, or quote", "authority": "user|repo|inferred"}],
+ "shape": {"first_proof": {"question": "...", "artifact": "...", "decision_rule": "..."}},
+ "implementation": {"fast_local_loop": {"command": "the one command that proves the first milestone locally"}}}
+```
+
+`fast_local_loop.command` is required as soon as the plan has a material dependency.
 
 ## Initiative lifecycle
 
@@ -259,6 +269,16 @@ A first milestone may use a local substitute when that is the fastest way to pro
 Before naming browser or database proof, check the local service and data target. If safe test data is unavailable, defer that proof. State what the first milestone can verify.
 
 Do not create horizontal “frontend,” “backend,” “infrastructure,” or “tests” milestones without an independently useful outcome.
+
+### Check for overlapping work in flight
+
+Before you finalize the plan, list the modules each milestone changes, then compare them with other open work in the repository:
+
+```sh
+gh pr list --state open --json number,title,headRefName,files --jq '.[] | "\(.number) \(.title): \([.files[].path] | join(" "))"'
+```
+
+If another open PR or stack changes the same core modules (data model, storage, editor setup, shared schema), say so under "What needs you": name the PRs and the shared files, and recommend an order. Either this initiative waits for the other to merge, or it builds on that branch. Parallel stacks over the same core produced forced rebases and a silently overridden user decision in October 2026.
 
 ## Question rounds
 
