@@ -94,10 +94,12 @@ Do one full round, one round of fixes, and one confirmation round, then stop.
 - Take screenshots at about 1440 px, at about 800 px, at the narrow target, and in dark mode if the app has it. Save them as `after-*.png` next to the before images.
 - Run the interaction checks: the main job end to end; filter, brush, and select; toggle each view away and back; open each popover and dialog; and use the keyboard. Look for layout shifts, lost state, and console errors.
 - Run the project's checks (typecheck, lint, and tests), and run [references/repeat-corrections.md](references/repeat-corrections.md) as a checklist against the after screenshots.
+- **If you can't view images, fail fast.** When opening a screenshot fails or times out twice in a row (for example "hook did not respond"), stop trying. Each attempt can block for about 10 minutes. Keep capturing screenshots for the PR, but check layout with a script that measures overflow, overlap, clipping, contrast, and console errors. Try one more image read just before delivery. If that fails too, the visuals are unverified: never describe them as checked.
 
 ### 6. Deliver and hand off
 
 - Follow Byron's delivery instruction: stacked PRs, one PR, or a commit. With PRs, use Conventional Commit titles and attach before/after screenshots with `gh pr edit --attach`. Never commit screenshots.
+- If you didn't view the after screenshots yourself, say the visuals are unverified: start the PR body with `> **Visuals unverified:** I couldn't view these screenshots. I checked layout by measurement only. Please look before merging.`, and say the same in HANDOFF.md and as the first line of your reply.
 - Write `./tmp/10x/<slug>/HANDOFF.md` with:
   - the target, the inferred goal, and how to run the app and reach the screen
   - the scores before and after

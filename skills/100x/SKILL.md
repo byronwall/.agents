@@ -41,6 +41,8 @@ Use realistic data to capture each region of the target in each state that appli
 
 Save the images to `./tmp/100x/<slug>/`. Use the browser's zoom capture on each region; small defects don't show up in full-page screenshots.
 
+**If you can't view images, fail fast.** When opening a screenshot fails or times out twice in a row (for example "hook did not respond"), stop trying. Each attempt can block for about 10 minutes. Keep capturing the matrix for the PR, but build the ledger from scripted measurements: overflow, overlap, clipping, alignment offsets, contrast, focus rings, and console errors. Mark the ledger "visuals unverified" at the top. Try one more image read just before delivery. If the handoff says the 10x pass was visuals unverified, look at its after images first.
+
 ### 2. Write the defect ledger
 
 Inspect each zoomed region against [references/craft-checklist.md](references/craft-checklist.md). Write `./tmp/100x/<slug>/LEDGER.md` as a table:
@@ -76,6 +78,7 @@ Mark each ledger row as fixed, deferred with a reason, or rejected with a reason
 ### 5. Deliver
 
 - Follow Byron's delivery instruction. Attach the most telling before/after pairs to the PR with `gh pr edit --attach`.
+- If you didn't view the after screenshots yourself, say the visuals are unverified, the same way as `10x` step 6: in the opening line of the PR body and the first line of your reply.
 - Reply with:
   - ledger counts by severity and how many were fixed
   - the five fixes Byron will notice most
