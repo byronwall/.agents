@@ -1,6 +1,6 @@
 ---
 name: 10x
-description: Make a UI about 10x better in one aggressive pass. Ground in the running app, come up with structural ideas (not just restyling), pick the strongest bundle, implement it end to end, verify in a browser, and leave a handoff for the `100x` craft pass. Use when Byron says `/10x` or `$10x`, or asks to "make this UI 10x better", "punch up the visuals", "make it amazing", or "let it rip" on a screen, page, component, chart, dashboard, viewer, or app.
+description: Make a UI about 10x better in one aggressive pass. Ground in the running app, come up with structural ideas (not just restyling), pick the strongest bundle, implement it end to end, verify in a browser, and leave a handoff for the `100x` craft pass. Use when Byron says `/10x` or `$10x`, or asks to "make this UI 10x better", "punch up the visuals", "make it amazing", or "let it rip" on a screen, page, component, chart, dashboard, viewer, or app. For a target with no UI (a skill, script, CLI, or workflow), applies the same aggressive-leverage pass to the task itself.
 argument-hint: "<target: URL, route, component path, PR, or screenshot> [-- goal, user, or constraints]"
 user-invocable: true
 ---
@@ -10,6 +10,18 @@ user-invocable: true
 Byron calls this with a target and a sentence or two of intent, then expects to come back to something that is clearly better than a polish pass. He follows up in a later thread with `100x`, which handles fine craft. This pass is about **leverage**: what the screen helps the user do, how information is arranged, and what interactions it supports.
 
 Don't stop to ask questions unless the target can't be found or the change would delete user data. Make the call, then record it under "Decisions for you."
+
+## Targets with no UI
+
+If the target has no obvious UI (a skill, a script, a CLI, an API, a doc, a workflow), apply the spirit of this skill instead of its UI mechanics:
+
+- **Ground:** use it for real, the way its user does. Run it on real inputs, or read transcripts of real runs, and note every point of friction.
+- **Diagnose:** score the two or three lenses that fit its job, renamed in its own terms. Job clarity and information architecture usually carry over.
+- **Ideas and choice:** same as step 3. Structural ideas change what the user can do or get back, and Remove counts double, since shorter is better for agent-facing text.
+- **Implement and verify:** build it end to end, then prove it with a real run instead of screenshots.
+- **Deliver:** reply with what changed by effect and **Decisions for you**. Skip `byron-ui-taste`, the repeat-corrections checklist, browser screenshots, HANDOFF.md, and the `100x` handoff.
+
+If nothing clears the bar, say so and leave it alone.
 
 ## Inputs
 
