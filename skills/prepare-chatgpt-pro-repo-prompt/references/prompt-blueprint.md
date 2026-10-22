@@ -1,241 +1,69 @@
-# ChatGPT Pro Repository Prompt Blueprint
+# Pro Prompt Blueprint
 
-Use this reference to assemble a detailed prompt. Select only the sections that serve the task. Replace every placeholder before delivery.
-
-The assembled handoff prompt is a Codex artifact. Save it as a new Markdown file in the target repository unless the user explicitly requests otherwise. Do not overwrite an existing file.
+Assemble the prompt from these sections. Use the ones the task needs, in this order. Write short, direct sentences; every line should change what Pro does.
 
 ## 1. Repository and mission
 
-Start with the canonical repository URL. Put it on its own line.
+- Canonical repository URL on its own line, and the ref or commit.
+- The mode (Design, Methods, Strategy, Review, Evaluation loop).
+- One primary mission as a decision question. Good: "What should explorEDA's selection-bound narrative findings look like, and how should we build them?" Weak: "Research narrative findings."
+- Why it matters now and what will be built or decided from the answer.
 
-State:
+## 2. Role
 
-- the exact repository and target ref;
-- the one primary task;
-- why the result is needed now;
-- the decision or later work that the result must support.
+Name a concrete expert role (for example "senior data-visualization tool designer who has shipped linked-view systems", or "applied statistician focused on numerically stable regression"). Ask for candid judgment: strengths, weaknesses, tradeoffs, rejected options, uncertainty.
 
-Prefer a decision question over a broad request. For example: “Which API changes reduce consumer work without weakening type safety or increasing the public surface?”
+## 3. Access check
 
-## 2. Role and review posture
+Before the work, Pro confirms it can read the repository at the named ref, or the supplied source packet. If decisive source is missing from both, it stops and names the smallest missing input. It does not claim a full review from partial access. One short paragraph is enough.
 
-Assign a useful expert role. Name the relevant domain, language, framework, or product concern.
+## 4. Reading route
 
-Ask for a candid review. Require strengths, weaknesses, tradeoffs, rejected ideas, and uncertainty. Do not ask the model to support a preferred answer.
+A short ranked list of real files: rules (`AGENTS.md`), product and architecture docs, public entry points, the core implementation for the topic, representative examples, tests, and prior research or plans on the topic. Say "at minimum" when broader discovery helps.
 
-## 3. Access preflight
+## 5. Ranked questions
 
-Put this before the substantive work.
+Three to six questions, most important first. For each, say what a useful answer must decide.
 
-### GO
+By mode:
 
-Continue only when:
-
-- the exact repository or an explicitly permitted source packet is accessible;
-- the owner and repository name match the full URL or packet manifest;
-- the required branch, ref, or packet baseline can be identified;
-- the required source and documents are available;
-- the requested task is possible with the active tools;
-- required write capability exists, or the prompt permits a complete read-only output fallback.
-
-Record the inspected branch, ref, or commit when available. If Codex supplies a source packet, identify its baseline and included paths. Use it when the prompt explicitly permits that fallback. State its coverage limits and whether it can run tests.
-
-### NO-GO
-
-Stop and report the blocker when:
-
-- the source belongs to the wrong repository;
-- the repository is unavailable and no permitted source packet supplies the required evidence;
-- a required private repository is not authorized;
-- repository indexing prevents access and no permitted source packet supplies the required evidence;
-- required source, data, or prior artifacts are absent from both the repository and any permitted source packet;
-- the prompt requires mutation, write capability is absent, and no read-only output fallback is permitted;
-- instructions conflict in a way that changes the result;
-- a success metric cannot be evaluated;
-- work would require guessing a material product decision.
-
-State the smallest action that would unblock the work. Do not claim a complete review from partial access.
-
-## 4. Repository reading route
-
-Give a short, ranked route through the actual repository. Common groups include:
-
-1. `AGENTS.md` and repository rules.
-2. README, principles, architecture, and product documents.
-3. Package manifests and public entry points.
-4. Core implementation and framework adapters.
-5. Representative consumers and advanced examples.
-6. Tests, fixtures, evaluation tools, and current baselines.
-7. Prior research or plans that define the decision context.
-
-Name real files. Say “at minimum” when broader discovery is useful. Tell the model to verify that the prompt's repository facts still match the selected ref.
-
-## 5. Objectives and priority questions
-
-Use one section per major question. For each question, specify:
-
-- what to inspect;
-- which users or cases it affects;
-- what evidence is required;
-- which tradeoffs matter;
-- what a useful answer must decide.
-
-Rank the questions. State which question is most important.
-
-For repository reviews, useful lenses can include:
-
-- consumer experience and repeated work;
-- correctness and failure behavior;
-- public API size and stability;
-- implementation complexity;
-- type inference and diagnostics;
-- runtime behavior and performance;
-- inspectability and debugging;
-- framework integration;
-- example realism and corpus gaps;
-- migration and compatibility costs.
-
-Use only relevant lenses.
+- **Design:** What do the best tools, libraries, and papers do (name them and cite primary sources)? What are the real design options for this product? Which one and why? What does the user see and do? What changes in the data model, API, and state? What is the milestone plan? What would make the design fail?
+- **Methods:** What is the correct method and its assumptions? Where does the current code differ? What are the numerical and edge-case failure modes? What test cases with exact expected values prove it? What is the implementation plan?
+- **Strategy:** Who is this for and what job does it do better than named alternatives? What are the three to five highest-leverage capability bets, ranked, with reasoning? What should be stopped or not built?
+- **Review:** What is wrong, ranked by user impact, with evidence and a fix for each?
 
 ## 6. Evidence rules
 
-Require the result to:
+- Cite repository paths and symbols for claims about the code.
+- Cite current primary sources (docs, papers, source code) for decisive external claims, with URLs.
+- Label facts, inferences, and proposals when it isn't obvious.
+- Say when evidence is missing or conflicting.
 
-- cite exact repository paths and symbols;
-- use short excerpts only when they improve clarity;
-- separate observed facts, inferences, and proposals;
-- say when evidence is missing or conflicting;
-- distinguish common cases from advanced cases;
-- separate product, API, documentation, example, test, and tooling problems;
-- explain the cost and benefit of each recommendation;
-- reject ideas that do not earn their added complexity.
-
-Do not accept line count or token count as the only quality measure. A shorter design can hide behavior or move complexity into the library.
+Don't ask Pro to prove demand, run a usability study, or produce integrity receipts. Those don't improve the design.
 
 ## 7. Scope and non-goals
 
-List what the model must not do. Typical boundaries include:
+List what is out of scope for this mission, and any hard constraints (stack, package manager, public API stability, licensing). Keep it short and specific; don't list generic cautions.
 
-- do not implement during a review;
-- do not change production files;
-- do not redesign unrelated areas;
-- do not assume all repeated code is harmful;
-- do not weaken types, tests, inspection, or runtime behavior;
-- do not add a public helper for one isolated example;
-- do not overwrite prior research or evidence;
-- do not claim tool actions that were not verified.
+## 8. Deliverable
 
-Keep these boundaries proportional to the task.
+Design and Methods missions end in a plan someone can build. Ask for:
 
-## 8. Recommendation format
+1. **Report** (Markdown): the answer to each ranked question, with sources.
+2. **Decision** at the top: what to build, in one paragraph.
+3. **Implementation plan** (Markdown): milestones in order, each one shippable on its own, naming the files or modules it changes, the tests that prove it (with exact expected values where they apply), the docs page and runnable example it needs, and its main risk.
+4. **Recommendations** with stable IDs, each classified **Build**, **Explore** (needs a prototype first), **Defer**, or **Avoid**, with a one-line reason.
 
-For each recommendation, request:
+Strategy missions end in ranked bets, each with a suggested Design-mode follow-up question. Review missions end in a ranked fix list.
 
-- the problem and affected users;
-- repository evidence;
-- the proposed change;
-- a small before-and-after example when useful;
-- impact on correctness, types, runtime, and diagnostics;
-- implementation and maintenance cost;
-- public API and compatibility impact;
-- alternatives considered;
-- a confidence level;
-- a proof or validation method.
+Ask Pro to attach the files as downloads and link each one in its final message. If it can't create files, it gives the full content inline. One ZIP is fine but optional; don't ask for manifests or hash files.
 
-A useful final classification is:
-
-- **Keep** — strong current behavior.
-- **Fix now** — high-value, low-regret work.
-- **Explore** — a hypothesis that needs a prototype.
-- **Avoid** — an attractive idea with excess cost or hidden behavior.
-- **Remove or deprecate** — surface that does not justify its cost.
+Tell Pro that Codex or Claude will review the result against the code and do all repository changes.
 
 ## 9. Evaluation-loop additions
 
-Use this section only for iterative research or optimization.
+Only for iterative optimization: an immutable baseline, objective metrics and invariants, `better` / `not-better` / `invalid` results, cheap rejection checks before full checks, a bounded trial count, and a ledger of trials. Static checks can reject a candidate but not accept one when a full evaluation is required.
 
-Define:
+## 10. Final status
 
-- an immutable baseline and exact comparison source;
-- objective metrics and non-negotiable invariants;
-- a result state such as `better`, `not-better`, or `invalid`;
-- cheap rejection checks and full acceptance checks;
-- required self-tests for the evaluator;
-- rules that prevent deleting behavior or hiding work;
-- isolated candidate work and protected user files;
-- a bounded experiment count or time budget;
-- stop conditions for repeated failures or missing decisions;
-- a compact ledger for accepted, rejected, and invalid trials.
-
-Static checks can reject a candidate. They cannot accept one when full evaluation is required.
-
-Commit only accepted work when the user authorized commits. Never commit rejected experiments.
-
-## 10. Deliverable contract
-
-Distinguish the two deliverables:
-
-1. Codex saves this ChatGPT Pro handoff prompt as a new Markdown file.
-2. The handoff prompt tells ChatGPT Pro what result to produce.
-
-Name the exact ChatGPT Pro output. Include:
-
-- file type and path when an artifact is required;
-- required sections and level of detail;
-- whether the document must stand alone;
-- required tables, examples, evidence, or appendices;
-- what must remain out of the document;
-- the final response summary and status evidence.
-
-Require a compact final status. It should list access status, files read, checks run, deliverables, unresolved blockers, and assumptions.
-
-### When Codex will collect the result autonomously
-
-Specify the artifacts needed for local integration. For substantial research, request a report, source list, and recommendations with stable IDs. Add comparison tables, proposed document changes, or a proof plan only when useful.
-
-Ask for downloadable files with clear names. For several files, request a ZIP plus standalone companions and a manifest. Require source citations, explicit unanswered questions, and separation of completed checks from proposed checks.
-
-Ask Pro to link every output in its final response. If file creation is unavailable, require complete content in the response. Codex can then save it locally and record that fallback.
-
-Tell Pro that Codex will review and integrate the results. Keep local Git and PR duties out of Pro's research assignment. Define which missing evidence should cause a targeted follow-up and which open choices can remain for human review.
-
-## 11. Mutation and commit gate
-
-Use only when the user explicitly requests mutation.
-
-Before edits, require:
-
-- a writable checkout, not only the read-only GitHub app;
-- the correct branch or explicitly approved branch creation;
-- current status and protection of existing changes;
-- exact allowed files and forbidden files;
-- the repository's package manager and validation commands.
-
-Before a commit, require:
-
-- all task-specific gates to pass;
-- inspection of the staged diff;
-- only authorized files in the commit;
-- the required author and committer identity;
-- the exact commit subject or its naming rule;
-- verification of the resulting commit and final status.
-
-Treat commit and push as separate permissions. Include them only when covered by the user's request. A full-process request includes Codex's scoped push for the review PR; it does not require Pro to push.
-
-### Read-only fallback
-
-If write capability is absent, return the complete artifact in the response. For code changes, return a patch only when it is useful and complete. State that no repository file, commit, push, or pull request was created.
-
-## 12. Final quality gate
-
-Tell the model not to declare success until:
-
-- every priority question has an evidence-backed answer;
-- the GO checks passed;
-- no NO-GO condition remains hidden;
-- required validation passed;
-- the deliverable exists or the fallback is complete;
-- mutation evidence matches the requested action;
-- final claims do not exceed the available evidence.
-
-When a gate fails, require the result to say `NO-GO`, name the failed gate, show the relevant evidence, and give the next safe action.
+Pro ends with: access status, files read, what it checked versus what it proposes, deliverable links, and open questions.

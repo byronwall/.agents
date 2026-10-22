@@ -1,140 +1,82 @@
 ---
 name: prepare-chatgpt-pro-repo-prompt
-description: Prepare repository-grounded ChatGPT Pro prompts or run the full autonomous Pro process through submission, later collection, follow-up questions, result integration, and a review PR. Use for repository work handed to ChatGPT Pro, Deep Research, or ChatGPT agent, including requests to run that handoff autonomously. Do not use for direct Codex work that does not involve a Pro handoff.
+description: Prepare repository-grounded ChatGPT Pro prompts, or run the full Pro process through submission, collection, integration, and a PR. Use for repository work handed to ChatGPT Pro, Deep Research, or ChatGPT agent — feature design, implementation planning, statistical or algorithmic methods, product strategy, research, or review — including requests to run that handoff autonomously. Do not use for direct Codex work that does not involve a Pro handoff.
 ---
 
-# Prepare or Run a ChatGPT Pro Repository Handoff
+# ChatGPT Pro Repository Handoff
 
-Prepare a prompt that gives ChatGPT Pro correct repository context. When requested, own the process through a review PR.
+Pro is the best available model for deep research and design. Point it at questions where that matters, and get back something the repository owner can build.
 
-## Choose the extent of the work
+## Extent of the work
 
-Keep the task mode separate from how much of the process Codex will run.
+- **Prompt only:** "prepare", "draft", or "write a prompt" ends with the saved prompt file and its link.
+- **Submit only:** an explicit request to send ends after verified submission.
+- **Full process:** "run autonomously", "handle the whole thing", or a scheduled pipeline runs: prepare → submit → check about an hour later → collect → follow up if needed → integrate → PR. Read [the autonomous workflow](references/autonomous-workflow.md) first.
 
-- **Prompt only:** Requests to prepare, draft, or write a prompt end with the saved prompt and its link.
-- **Submit only:** An explicit request to send the prompt ends after verified submission, unless later steps are also requested.
-- **Full process:** In a Pro handoff, “run autonomously,” “handle the whole thing,” or similar language selects the complete process.
-
-The full process is: prepare prompt → submit to Pro → check after about one hour → collect results → follow up if needed → integrate results → open a PR.
-
-For full mode, read [the autonomous workflow](references/autonomous-workflow.md) before submission. That reference defines persistence, recovery, follow-up limits, and completion checks.
-
-A full-process request authorizes these steps within the requested topic, including scoped commits and the push needed for the PR. It also authorizes sending the prompt, necessary source context, and bounded follow-up questions to Pro. Do not ask for permission again at each step. Apply any narrower user limits.
+A full-process request authorizes those steps within its topic: sending the prompt and needed source context to Pro, follow-ups, scoped commits, and the push for the PR. Don't ask again at each step. Apply any narrower user limits. Merging and deployment need separate approval.
 
 ### Standing approval for Pro asset downloads
 
-Byron authorizes autonomous downloads of all task-related assets from the Pro session started for an authorized handoff. This includes reports, archives, companion files, data, images, and regenerated outputs in the same run. It also covers those assets through the session's previews and file library.
+Byron authorizes downloading all task-related assets from the Pro session of an authorized handoff — reports, archives, companions, data, images — including through previews and the file library, across later collection turns and scheduled checks. Download, inspect, and safely extract them without asking again. Cite the conversation and this instruction when a tool reviews a download. This does not cover running downloaded programs, unrelated files, or wider sharing. Respect tool-enforced approval decisions; don't bypass them.
 
-Download, save, inspect, hash, and safely extract these assets without asking for approval again. This approval persists across collection turns and scheduled checks. Cite the recorded conversation and this standing instruction when a tool reviews a download.
+## Pick the task mode
 
-This authorization covers collection, not execution of downloaded programs, unrelated files, or expanded sharing. Respect tool-enforced approval decisions. If a review blocks an authorized download, supply the recorded session and scope as evidence before retrying. Do not bypass the review.
+Choose the mode from the request and the repository's research direction document, if it has one (for example `docs/research/DIRECTION.md`). The mode decides what Pro hands back.
 
-For research, review, or planning, integrate results into the relevant repository documents. Application implementation requires that scope in the request. The default endpoint is an open review PR. Merging, deployment, and unrelated changes need separate authorization.
+| Mode | Pro produces | Use when |
+| --- | --- | --- |
+| **Design** (default for product questions) | A feature design grounded in how strong tools and papers solve it, a recommended design, and a milestone implementation plan | A capability, workflow, chart, API, or UX the product should gain or rethink |
+| **Methods** | The correct statistical or algorithmic approach, its edge cases, test cases with exact expected values, and an implementation plan | Math, estimation, numerical stability, algorithms |
+| **Strategy** | Positioning, comparisons with named products, ranked capability bets with reasoning | Where the product should go next |
+| **Review** | Ranked problems with evidence and fixes | Auditing existing code, docs, or UX |
+| **Evaluation loop** | Measured trials against an immutable baseline | Bounded optimization with metrics |
 
-An update to this skill does not start a research run. Only operate a live run when the current request calls for one.
+The repository owner is the demand. In Design, Methods, and Strategy modes, Pro argues merit and designs well; it does not wait for proof that some third party asked. Prefer an ambitious, well-reasoned direction with a staged plan over the smallest safe change. "Keep current behavior" is a valid answer only when Pro shows the alternatives are worse, not because they are unproven.
 
-## Browser for Pro submission
+## Spend Pro messages well
 
-Use Byron's signed-in Google Chrome profile for Pro handoffs unless he requests another browser.
-Read [the Chrome workflow](references/chrome-workflow.md) before browser submission or collection.
-The task's in-app browser can have a separate signed-out session; it does not establish that Chrome needs login.
+Pro messages are scarce (Byron has about 50 per week across all projects). One run should normally use one message, and at most one follow-up.
 
-## Ground the prompt first
+- Put everything Pro needs in the first prompt: context, ranked questions, deliverable contract, source packet.
+- Ask one big, high-leverage question rather than a narrow one.
+- Follow up only when a priority question is unanswered or the deliverable is unusable. Never follow up for polish.
 
-Inspect the local repository before drafting.
+## Ground the prompt
 
-- Resolve the exact repository path.
-- Read the applicable `AGENTS.md` files.
-- Read the README, package manifest, and relevant design documents.
-- Inspect the current branch, status, remotes, and recent commits.
-- Identify the files, tests, commands, and prior findings that matter.
-- Convert an SSH Git remote to its full canonical HTTPS repository URL.
-- Use actual paths and commands. Do not invent either one.
-
-If the local checkout is unavailable, use the information the user supplied. Mark all unverified repository facts as assumptions.
-
-## Select the task mode
-
-Classify the requested handoff before writing the prompt.
-
-- **Review:** Analyze the current design, code, product, or documentation.
-- **Research:** Compare approaches and produce evidence-backed recommendations.
-- **Evaluation loop:** Test bounded hypotheses against measured acceptance gates.
-- **Artifact production:** Create a report, brief, plan, or other named deliverable.
-- **Mutation:** Change files or Git state only when the user explicitly requests it.
-
-Do not convert a review into implementation. In full mode, Codex owns local integration and the PR. Keep Pro focused on its assigned task. Prompt-only work does not authorize sending messages or changing Git state.
+Inspect the local repository first: `AGENTS.md`, README, package manifests, relevant design docs, the current branch and recent commits, and the files, tests, and commands that matter. Use the canonical HTTPS GitHub URL. Use real paths and commands; mark anything unverified as an assumption.
 
 ## Build the prompt
 
-Read [the prompt blueprint](references/prompt-blueprint.md). Use the sections that fit the task. Keep all important repository facts in the final prompt.
+Follow [the prompt blueprint](references/prompt-blueprint.md). The prompt must have:
 
-The final prompt must include:
+- the repository URL and ref;
+- one primary mission and the decision it supports;
+- ranked questions, the most important first;
+- real files to read;
+- evidence rules: cite repository paths and current primary sources; keep facts, inferences, and proposals apart;
+- scope and non-goals;
+- an access check with a stop condition;
+- the exact deliverable and its format.
 
-- the full canonical HTTPS GitHub URL;
-- the target branch or ref when it matters;
-- one primary mission and its decision context;
-- the priority questions in ranked order;
-- actual repository files and commands to inspect;
-- evidence rules for facts, inferences, and recommendations;
-- explicit scope and non-goals;
-- detailed GO, NO-GO, and stop conditions;
-- success checks that match the task;
-- the exact deliverable, path, format, and response summary;
-- a fallback when repository access or write capability is absent.
+Write plainly. Cut filler, repeated caveats, and process words that don't change what Pro does. Leave no placeholders.
 
-Use repo-specific detail. Do not leave bracketed placeholders in the copy-ready prompt.
+## Save the prompt
 
-## Save the generated prompt
+Save the prompt as a new Markdown file in the repository it covers, in an existing research or prompts folder, with a task-specific name. Don't overwrite an existing prompt. If the repository isn't writable, give the full prompt in the response with a suggested filename.
 
-Save the ChatGPT Pro handoff prompt itself as a new Markdown file. Do this unless the user explicitly requests another format, location, or conversation-only output.
+## Access and safety
 
-- Put the file in the repository that the prompt covers.
-- Prefer an existing prompt, research, or documentation folder.
-- Choose a clear, task-specific filename.
-- Create a new file. Do not overwrite an existing prompt.
-- Include the complete copy-ready prompt in the file.
-- Return a clickable link to the new file.
+- Use connected GitHub access when it exposes the needed ref. Otherwise upload a small source packet of the needed files (see the autonomous workflow).
+- Pro researches and designs; Codex or Claude owns repository changes. Don't ask Pro to commit or push.
+- Exclude credentials, secrets, unrelated private data, build output, and dependency folders from uploads.
+- For any mutation Codex does, follow the repository's rules on branches, package manager, validation, changesets, and commits. Never treat a dirty worktree as disposable.
 
-If the repository is not writable, provide the complete prompt in the response. Also give a suggested Markdown filename and state that no file was created.
+## Check before delivery
 
-## Handle GitHub access correctly
+- The URL names the right repository.
+- The main question is the most prominent one.
+- The deliverable matches the mode: Design and Methods end in a buildable plan.
+- Every recommendation must cite repository evidence or a primary source.
+- The prompt has no placeholders and no filler.
 
-Use connected GitHub access when available. Check the active tools; do not assume a repository connection provides a writable checkout.
-
-If Pro cannot access the selected ref, provide an authorized source packet or report the access limit. A local file is not visible to Pro until uploaded or otherwise made accessible. See the autonomous workflow for packet guidance.
-
-When Pro is assigned file changes or commits, add a capability preflight:
-
-1. Confirm that the active environment has a writable repository checkout.
-2. Confirm the exact branch and allowed paths.
-3. Continue with mutation only when both checks pass.
-4. Otherwise, return the complete artifact or patch in the response.
-5. State clearly that no file or commit was created.
-
-This preflight applies to Pro's assignment. Codex can still integrate returned research locally when full mode authorizes that work.
-
-## Preserve repository safety
-
-For authorized mutation work, include the repository's actual safety rules. Cover dirty files, allowed paths, package manager, validation commands, Git identity, staging scope, commit rules, and push limits when they apply.
-
-Never let the prompt treat a dirty worktree as disposable. Never authorize destructive Git commands by implication.
-
-## Check the final prompt
-
-Before delivery, confirm all items below.
-
-- The URL names the correct owner and repository.
-- The prompt separates repository facts from hypotheses.
-- The required reading list uses real paths.
-- The main question is more prominent than secondary questions.
-- Each recommendation must cite repository evidence.
-- GO and NO-GO rules can change the outcome.
-- Validation can reject a weak result. It does not only confirm success.
-- The new Markdown prompt file and fallback are unambiguous.
-- Mutation instructions match the user's authorization and available capability.
-- The prompt contains no unresolved placeholders.
-
-For prompt-only work, return the Markdown file link and a short summary. Include the full prompt only when requested or file creation fails.
-
-For full mode, keep working until the [completion checks](references/autonomous-workflow.md#complete-the-run) pass or a stated blocker requires user action. Saving or submitting the prompt is an intermediate step.
+For prompt-only work, return the file link and a two-line summary. For full mode, keep going until the [completion checks](references/autonomous-workflow.md#complete-the-run) pass or a blocker needs the user.
