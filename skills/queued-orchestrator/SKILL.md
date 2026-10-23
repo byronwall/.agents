@@ -9,6 +9,14 @@ This session coordinates; worker **sessions** do the work. Byron asked for this
 shape explicitly: no subagents or background tasks in the orchestrator thread
 for agent work, parallel where safe, dependent work queued, PRs stacked.
 
+## 0. Where the orchestrator runs
+
+- Start the orchestrator in its own worktree from the first message, or stay in
+  the main checkout. Don't call `EnterWorktree` mid-session: after it, the
+  isolation check refuses git with `-C`, loops or chains that contain git, and
+  pnpm or python commands with a `$VAR` path. If you're already inside one, run
+  one plain git command per call and write helper scripts to files.
+
 ## 1. Ground and decide (orchestrator, here)
 
 - Ingest the inputs yourself (recordings, transcripts, the code areas). Read
@@ -70,6 +78,13 @@ Do not wait, poll, or predict results.
   diff. Never start it early on a guess.
 - **New independent work:** start another worker if its files don't overlap;
   otherwise queue it behind the owner.
+- **Base branch owned by a running session** (Byron says "stack on top of
+  @[other session]"): that branch keeps moving. `git fetch` it again right
+  before you branch from it and before each PR, and when the other session
+  reports a push, restack onto it before building further.
+- **Reading worker progress:** use `get_session`, `list_events`, the worker's
+  report, and its branch (`git log`, `git diff`). Never `Read` a session's
+  `.jsonl` transcript; one costs about 60K characters.
 
 **When Byron says "keep going":** check `list_sessions {"linked": true}`,
 then each branch's `git log main..<branch>` and worktree `git status`. A
