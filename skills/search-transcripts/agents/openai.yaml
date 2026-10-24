@@ -1,4 +1,0 @@
-interface:
-  display_name: "Search Transcripts"
-  short_description: "Refresh and search Byron’s transcript archive"
-  default_prompt: "Use $search-transcripts to refresh my transcripts, then find what I said about a topic or project."

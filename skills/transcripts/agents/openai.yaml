@@ -1,0 +1,4 @@
+interface:
+  display_name: "Transcripts"
+  short_description: "Ingest, view, and search Byron’s voice-memo transcripts"
+  default_prompt: "Use $transcripts to process my new voice memos, open the viewer, then find what I said about a topic or project."
