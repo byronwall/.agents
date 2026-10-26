@@ -98,7 +98,7 @@ Do one full round, one round of fixes, and one confirmation round, then stop.
 
 ### 6. Deliver and hand off
 
-- Follow Byron's delivery instruction: stacked PRs, one PR, or a commit. With PRs, use Conventional Commit titles and attach before/after screenshots with `gh pr edit --attach`. Never commit screenshots.
+- Follow Byron's delivery instruction: stacked PRs (a real `gh stack`, per the `gh-stack` skill), one PR, or a commit. With PRs, use Conventional Commit titles and attach before/after screenshots with `gh pr edit --attach`. Never commit screenshots.
 - If you didn't view the after screenshots yourself, say the visuals are unverified: start the PR body with `> **Visuals unverified:** I couldn't view these screenshots. I checked layout by measurement only. Please look before merging.`, and say the same in HANDOFF.md and as the first line of your reply.
 - Write `./tmp/10x/<slug>/HANDOFF.md` with:
   - the target, the inferred goal, and how to run the app and reach the screen

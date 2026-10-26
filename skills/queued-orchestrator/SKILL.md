@@ -177,8 +177,10 @@ foreground `gh pr checks --watch` (one ran 601s).
 - Queue each PR with `gh pr merge <n> --auto --merge` and move on; GitHub
   merges it when checks pass. If the repo has auto-merge off, tell Byron once
   (Settings → General → Allow auto-merge) and use the fallback below.
-- Stacked PRs: queue only the bottom one. After it merges, retarget the next
-  (`gh pr edit <n> --base main`) and queue it.
+- Stacked PRs: do not queue layers with `gh pr merge` or retarget them with
+  `gh pr edit --base`. Wait for the top layer's checks, then run
+  `gh stack merge <top-pr> --yes`. It merges that PR and every layer below it
+  in one step.
 - Fallback without auto-merge: one `gh pr checks <n> --watch` with
   `run_in_background: true`, then merge on its exit notice.
 
