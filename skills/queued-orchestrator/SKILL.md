@@ -1,6 +1,6 @@
 ---
 name: queued-orchestrator
-description: Run multi-part work from one Claude Desktop session that acts as orchestrator. It splits the work into parallel worker sessions, each in its own worktree and branch, queues dependent layers until their parents land, forwards scope changes to running workers, and assembles every branch into one linear gh-stack PR stack. Use when Byron says `/queued-orchestrator`, asks Claude to "be the orchestrator", "use worker threads/sessions", "run in parallel", "queue it after X", or "stack PRs as you go" for work with several separable pieces. Not for Codex (use `orchestrate-work`) or for a single small change.
+description: Run multi-part work from one Claude Desktop session that acts as orchestrator. It splits the work into parallel worker sessions, each in its own worktree and branch, queues dependent layers until their parents land, forwards scope changes to running workers, and assembles every branch into one linear gh-stack PR stack. Use when Byron says `/queued-orchestrator`, asks Claude to "be the orchestrator", "use worker threads/sessions", "spawn workers", "run in parallel", "crank on them in parallel", "throw up PRs", "queue it after X", or "stack PRs as you go" for work with several separable pieces. Not for Codex (use `orchestrate-work`) or for a single small change.
 ---
 
 # Queued Orchestrator
@@ -65,8 +65,34 @@ the `start_session` calls in parallel with:
   - the report: branch name, what changed, verification results, and anything
     left over
 
+Run at most **3 workers at once that start a dev server, run e2e, or run the
+full check suite**; queue the rest as the next wave. On Oct 21, seven at once
+made the first page load take 4–5 minutes, a check chain take 430s, and a
+Playwright run time out; on Oct 24 two parallel vitest runs swapped the Mac.
+Workers that only read or edit docs don't count. Tell each heavy worker to
+stop its dev server and drop its audit database before reporting.
+
 Then update the plan with each step's `session`, wrap up, and end the turn.
 Do not wait, poll, or predict results.
+
+### When `start_session` is refused
+
+Over Remote Control, `start_session` is refused ("you can start a session only
+on a message typed in the desktop app"). Tell Byron in one line, then fall back
+to `Agent` with `isolation: "worktree"` and `run_in_background: true`. Those
+workers run under a strict isolation check that refused 103 commands in one
+round. Add this to every fallback brief:
+
+- Stay inside your own worktree. Never read or write the orchestrator's `tmp/`,
+  scratchpad or worktree by absolute path. If you need a baseline, build it in
+  your own `tmp/`, or use the repo's own baseline tool (in diagram-studio,
+  `pnpm audit:compare --base <ref>`).
+- One plain git command per call: no `git -C`, no git inside loops or `&&`
+  chains, no `git worktree add`.
+- Put any loop, multi-step pipeline or inline program (`node -e`, `python3 -`)
+  in a script file under `tmp/` and run that file.
+- You are a subagent: skip `update_plan` and `wrap_up` (the app refuses them),
+  and hand back with the report described above.
 
 ## 4. While workers run
 
@@ -124,10 +150,43 @@ gh stack rebase            # resolve conflicts layer by layer, then --continue
   (include screenshots with `--attach`; never commit them).
 - Report each layer's PR link and what the checks did not cover.
 
+## 7. Separate PRs to main (when Byron wants each fix as its own PR)
+
+Sometimes each worker opens its own PR against main instead of a stack (for
+example, a batch of fixes from one audit). File ownership still decides what
+runs in parallel:
+
+- Before launching, list the files each fix will change. Two fixes that both
+  touch a hot engine file (a compile or layout pass, a router) are not
+  independent: run the second on the first's branch, or queue it until the
+  first merges.
+- Tell each worker which other PRs are in flight and which shared files they
+  touch, so it keeps its edits there small.
+- Merge in dependency order, and have each later worker merge main and re-run
+  its checks and audit before its PR merges. Don't merge a PR that GitHub shows
+  as conflicting.
+
+## 8. Landing PRs ("merge once CI is green")
+
+Don't poll: no `sleep` loops on `gh pr checks` or `mergeable`, and no
+foreground `gh pr checks --watch` (one ran 601s).
+
+- Byron's words ("merge #50 once CI is green", "get them merged") are the
+  approval. Quote them in the merge command's description so the auto-mode
+  classifier sees it.
+- Queue each PR with `gh pr merge <n> --auto --merge` and move on; GitHub
+  merges it when checks pass. If the repo has auto-merge off, tell Byron once
+  (Settings → General → Allow auto-merge) and use the fallback below.
+- Stacked PRs: queue only the bottom one. After it merges, retarget the next
+  (`gh pr edit <n> --base main`) and queue it.
+- Fallback without auto-merge: one `gh pr checks <n> --watch` with
+  `run_in_background: true`, then merge on its exit notice.
+
 ## Guardrails
 
 - Two writers never share a file set. When in doubt, queue instead of parallelizing.
-- Workers never push or open PRs; only the orchestrator does.
+- Workers never push or open PRs; only the orchestrator does. The exception is
+  separate PRs to main (section 7), where each worker opens its own.
 - Keep this thread light: plan, route, review, assemble. Small checks (a grep,
   a diff) are fine here; implementation goes to workers.
 - Keep the plan honest: exactly one step in progress, and running sessions
