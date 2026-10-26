@@ -115,7 +115,5 @@ For quick placeholders, keep it short:
 - A request to commit alone does not authorize publishing. A request to build a static copy alone does not authorize publishing.
 - Without publishing authorization, prepare and verify the result first. Then ask whether to commit and push it.
 - Before each commit, verify author and committer are `Byron Wall <byron@byroni.us>`.
-- Verify the live result after pushing. A successful push alone does not prove that publishing finished.
-- Allow several minutes for deployment. For static releases, use the bounded verification procedure in the release reference.
-- Report changed paths, validation, commit identifiers when applicable, and the live URL or local artifact path.
-- Distinguish verified live releases from pending deployments. Mention preview-server status when relevant.
+- Do not verify the live site after pushing. The build and deploy pipeline is reliable, and a push to `main` reaches `https://byroni.us` within a few minutes. Stop after the push; do not poll the public URL.
+- Report changed paths, validation, commit identifiers when applicable, and the live URL the change will appear at (or the local artifact path). Mention preview-server status when relevant.

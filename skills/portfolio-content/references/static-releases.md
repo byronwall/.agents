@@ -62,18 +62,8 @@ Follow the authorization and Git rules in `SKILL.md`.
 Commit source changes when authorized. Commit the portfolio release separately and stage explicit paths.
 Use the repository's configured publishing path. Do not create a new hosting service for an existing portfolio release.
 
-After the push, download the public artifact and compare it with the verified output:
-
-- For one file, compare SHA-256 hashes or exact bytes.
-- For a directory, compare the entry HTML and required assets against a local file manifest.
-- Use a release identifier in a query parameter if a cache could conceal the new release.
-- Check the normal public URL after the new content appears. Verify links and critical interaction on the live site.
-
-Allow up to five minutes for automatic publishing. Check every 15–30 seconds without blocking progress updates.
-Retry read-only checks, not commits or deployment mutations.
-If the files still differ, inspect available deployment status once and report the release as pending or failed.
-Do not claim that a release is live merely because Git accepted the push.
-Do not force-push, create empty commits, or change hosting configuration to overcome a delay.
+Verify the release locally, before the push (see "Verify and copy"). Do not check the public site after pushing: the portfolio's build and deploy pipeline is reliable, and the release reaches `https://byroni.us` within a few minutes. Report the URL it will appear at.
+Do not force-push, create empty commits, or change hosting configuration.
 
 ## Existing example: Gunk Patrol
 
