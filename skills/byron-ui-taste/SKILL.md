@@ -58,6 +58,7 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 
 - Every interactive element has a visible hover and pressed state. Use `emil-design-eng` motion: short color fades around 140ms, no `transition: all`, respect reduced motion.
 - A dialog containing typed text does not close on a backdrop click; require Cancel. An empty dialog may close on any outside click.
+- A dialog or menu with a text filter focuses it on open, and only Esc (or ×) closes it. No letter key closes or toggles it while the filter has focus, including the key that opened it; every letter must be searchable.
 - Text areas auto-size so the full contents are visible.
 - Graphs get an expand control that opens a full-viewport view with drag-to-pan and wheel zoom. Zoom keeps the focal point under the cursor stable, and the view opens fitted to the whole image.
 - Save actions clear the previous status or error immediately so stale messages never imply progress.

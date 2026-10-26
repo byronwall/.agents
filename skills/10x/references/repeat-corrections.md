@@ -15,6 +15,7 @@ These are follow-ups Byron sent *after* an agent finished a 10x, punch-up, or im
 - [ ] The header or info section isn't "pilly". Show metadata as plain text, key: value pairs, or icons.
 - [ ] There's no stray status dot, and no dots that are misaligned with their text.
 - [ ] There's no row of metric tiles across the top unless each tile drives a decision.
+- [ ] Tables get no totals, sum, or average rows unless the columns are numbers someone adds up. Generic Markdown tables don't. (expanded table: "That's not going to be helpful for the examples we have here.")
 - [ ] Horizontal dividers and rules are kept to a minimum.
 - [ ] No blue-on-blue or other low-contrast pairs in a hero or highlighted area.
 - [ ] No ugly focus ring around a whole chart or canvas. Show focus on the element being operated on.
