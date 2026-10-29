@@ -102,6 +102,21 @@ round. Add this to every fallback brief:
 - **New dependent work** ("queue it after X"): add a pending step, then start it
   from X's branch (`source_branch`) once X reports and you've checked its
   diff. Never start it early on a guess.
+- **Byron will be away:** a worker's report wakes you as an automated turn, and
+  `start_session` is refused there. So when Byron says he'll step away, or the
+  chain is long, start every queued worker now, in his turn. Each brief says
+  "wait: edit nothing until the orchestrator messages you that `<parent branch>`
+  landed", names the plan docs by branch and path (`git show <branch>:<path>`;
+  they may not be on main yet), and allows only reading meanwhile. Release each
+  worker with `SendMessage` and the exact branch to restack on.
+- **How a waiting worker waits:** on your `SendMessage`, or on an exact head
+  branch (`gh pr list --head <branch> --state merged`). Never on a marker
+  through `gh pr list --search`: GitHub search is fuzzy and matched step 2's PR
+  for step 5.
+- **Memory-heavy runs** (a big repo's analysis or Program build, a survey): at
+  most one at a time across all workers, each with a heap cap in its brief
+  (`node --max-old-space-size=4096`). Two at once swapped the Mac on Oct 25 and
+  a cleanup session killed one of them.
 - **New independent work:** start another worker if its files don't overlap;
   otherwise queue it behind the owner.
 - **Base branch owned by a running session** (Byron says "stack on top of
