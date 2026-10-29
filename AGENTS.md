@@ -6,6 +6,11 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 
 - Edit source with your file-edit tool. A scripted replace (`python3`, `sed`, `perl`) must assert its match count, so a stale match fails instead of exiting 0 with nothing changed.
 - The shell is zsh. Quote globs in arguments (`grep --include='*.ts'`), pass file lists as arrays (`files=(a b); cmd "${files[@]}"`), and don't start an `echo` argument with `=`.
+- zsh reads `$var:r`, `$var:h` and similar as modifiers. Write `${var}:` when a colon follows a variable.
+- macOS has no GNU `timeout`. Use the tool call's own timeout, or `gtimeout` if it is installed.
+- `git cherry-pick` has no `-q` flag; with it, nothing is picked.
+- Wait on a background job through its exit notice or a file it writes, not `pgrep -f <pattern>`. The waiting shell's own command line contains the pattern, so `until ! pgrep -f ...` never ends.
+- Unset `GIT_DIR` and other `GIT_*` variables before a git hook runs tests. Otherwise a test's `git init` or commit acts on the real repository.
 
 ## Project scale and implementation
 
