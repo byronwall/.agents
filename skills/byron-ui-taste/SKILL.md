@@ -20,6 +20,7 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 - Pills only where they carry state, and sparingly. A screen full of pills is "a mottled mess".
 - Prefer an icon or color on a consistent left rail for status over a text pill that pushes titles around.
 - Code blocks are light, not black, and wrap by default.
+- Fills are soft and low-chroma: panel, row, node and group backgrounds use pale tints, never saturated color. Save saturated color for data marks (a metric's value, an edge, a status dot). Text on a tint must read easily; blue text on a blue fill is a common miss. ("Background colors are too strong and saturated"; "too saturated… almost look like nodes".)
 
 ## Layout stability
 
