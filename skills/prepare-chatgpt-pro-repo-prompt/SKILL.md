@@ -19,6 +19,10 @@ A full-process request authorizes those steps within its topic: sending the prom
 
 Byron authorizes downloading all task-related assets from the Pro session of an authorized handoff — reports, archives, companions, data, images — including through previews and the file library, across later collection turns and scheduled checks. Download, inspect, and safely extract them without asking again. Cite the conversation and this instruction when a tool reviews a download. This does not cover running downloaded programs, unrelated files, or wider sharing. Respect tool-enforced approval decisions; don't bypass them.
 
+### Preserve every Pro result artifact
+
+Include all Pro result materials as committed assets under the relevant `docs/intent/<initiative>/` entry, linked from its plan and PR. Preserve original reports, images, mockups, diagrams, data, code companions, and supplied source registers or manifests. A summary or conversation link does not replace these artifacts. Download and safely extract ZIPs as needed, but keep the ZIP itself in ignored working storage; do not upload or commit it. See the autonomous workflow for collection and verification.
+
 ## Pick the task mode
 
 Choose the mode from the request and the repository's research direction document, if it has one (for example `docs/research/DIRECTION.md`). The mode decides what Pro hands back.
@@ -69,7 +73,8 @@ Save the prompt as a new Markdown file in the repository it covers, in an existi
 - Use connected GitHub access when it exposes the needed ref. Otherwise upload a small source packet of the needed files (see the autonomous workflow).
 - Pro researches and designs; Codex or Claude owns repository changes. Don't ask Pro to commit or push.
 - Exclude credentials, secrets, unrelated private data, build output, and dependency folders from uploads.
-- For any mutation Codex does, follow the repository's rules on branches, package manager, validation, changesets, and commits. Never treat a dirty worktree as disposable.
+- Drive ChatGPT in Byron's signed-in Chrome. Codex uses `@Chrome`; Claude Code uses the Claude in Chrome tools. See [the Chrome workflow](references/chrome-workflow.md).
+- For any mutation the agent does, follow the repository's rules on branches, package manager, validation, changesets, and commits. Never treat a dirty worktree as disposable.
 
 ## Check before delivery
 

@@ -27,6 +27,8 @@ If login is needed, Pro is unavailable, or submission stays blocked, keep the pr
 
 Default to a first check about an hour after submission. Use a heartbeat attached to the current chat: check existing automations, reuse a matching one, record its ID, and verify its schedule. Its prompt must name the conversation URL, checkout, branch, and run record; say what to do when Pro is running, failed, done, or waiting for an answer; carry the collection, integration, and PR duties; disable itself when done or blocked on the user; and stay quiet unless something meaningful changes.
 
+In Claude Code, use a session `CronCreate` job instead of a heartbeat. See [the Chrome workflow](chrome-workflow.md#schedule-the-later-check). It lives only as long as the session, so record that limit in the run record.
+
 Do useful local work while Pro runs. Don't poll every minute or chain sleeps. Without a scheduler, check once more, save progress, and report that continuation isn't arranged.
 
 At each check:
@@ -40,9 +42,11 @@ A slow run is not a failed run.
 
 ## Collect
 
-Download the deliverables under the standing approval in SKILL.md. Save them in an ignored working folder (for example `tmp/pro/<topic>/`), not in the repository. Check archive entries for unsafe paths before extracting. Open each report and confirm it is complete. If links expired or files are missing, check the same conversation and its file library first; ask Pro to regenerate only what is missing.
+Download all result materials under the standing approval in SKILL.md. Use ignored working storage for downloads and ZIP extraction. Check archive entries for unsafe paths before extracting. Open each report and confirm it is complete. If links expired or files are missing, check the same conversation and its file library first; ask Pro to regenerate only what is missing.
 
-Don't commit the originals, archives, hashes, or manifests. The conversation URL is the record of the source.
+Commit every extracted result artifact under `docs/intent/<initiative>/assets/pro-results/<run>/`, or the intent's established asset folder. Include original reports, images, mockups, diagrams, datasets, code companions, and supplied source registers or manifests. Preserve original bytes, names, attribution, and relative paths. Do not execute downloaded programs. Keep ZIPs in ignored working storage; do not commit or attach them. Do not add the input source packet as a result artifact.
+
+Add an asset index linking every report and companion. Link it from the intent plan, research summary, and PR body. Record the Pro conversation and baseline. Verify the extracted inventory against the archive or supplied manifest and verify the committed PR file list. Summaries and conversation links supplement the original artifacts; they never replace them. If originals are unavailable, record the missing files and recovery status instead of claiming completion.
 
 ## Follow up
 
@@ -55,7 +59,7 @@ Read every report before writing. Treat Pro's output as strong proposals, not in
 1. **Check the claims that decide the plan** against the current code: files and symbols named, current behavior described. Fix or flag anything stale. You don't need to re-verify every external citation; spot-check the ones the decision rests on.
 2. **Give each recommendation a disposition:** Build, Explore, Defer, or Avoid, with a one-line reason. Group duplicates. Build means it goes into a plan; it doesn't mean it is approved to ship.
 3. **Write the outputs where they will be used.** For Design and Methods missions, write or update the feature's plan (for example `docs/intent/<feature>/implementation-plan.md`) so a worker can start milestone one from it. Write a short research summary (decision, key findings, sources, open questions, conversation link) in the repository's research folder. Update the repository's research queue or catalogue.
-4. **Keep it small.** The summary and plan are the product; aim for a reviewer to read them in a few minutes.
+4. **Keep the review concise.** Aim for a reviewer to read the summary and plan in a few minutes. Preserve all original artifacts as linked intent assets.
 
 ## Complete the run
 
@@ -64,7 +68,7 @@ Run the repository's doc and format checks, and the full check only when the rep
 The run is complete when:
 
 1. Pro finished, with any needed follow-up.
-2. The reports were collected and read.
+2. All Pro result materials were collected, read or inspected, and committed as linked intent assets; ZIPs remain ignored.
 3. The summary, dispositions, and plan are written into the repository.
 4. The PR is open and verified.
 5. The run record is current and the heartbeat is disabled.
