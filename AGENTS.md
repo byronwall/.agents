@@ -4,7 +4,7 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 
 ## Shell
 
-- Edit source with your file-edit tool. A scripted replace (`python3`, `sed`, `perl`) must assert its match count, so a stale match fails instead of exiting 0 with nothing changed.
+- A scripted replace (`python3`, `sed`, `perl`) must assert its match count, so a stale match fails instead of exiting 0 with nothing changed.
 - The shell is zsh. Quote globs in arguments (`grep --include='*.ts'`), pass file lists as arrays (`files=(a b); cmd "${files[@]}"`), and don't start an `echo` argument with `=`.
 - zsh reads `$var:r`, `$var:h` and similar as modifiers. Write `${var}:` when a colon follows a variable.
 - macOS has no GNU `timeout`. Use the tool call's own timeout, or `gtimeout` if it is installed.
@@ -143,6 +143,7 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 
 ## GitHub pull requests and screenshots
 
+- Load the `pr-description` skill before you write or change any PR body. This applies to all PRs, including stack layers and worker PRs.
 - Use `gh` for GitHub PR creation, edits, and screenshot uploads. Do not use browser automation for these actions.
 - Use `--body-file` for multiline PR descriptions.
 - GitHub CLI 2.102.0 supports `--attach` on `gh pr create`, `gh pr edit`, and `gh pr comment`.
