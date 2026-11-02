@@ -1,123 +1,72 @@
 ---
 name: context-recorder-breakdown
-description: Break down a Context Recorder session (a folder under ~/Movies/ContextRecorder/ with recording.mp4, marks, transcript, browser events and saved pages) into actionable output — an exhaustive categorized feedback list, fix-now changes plus a future-ideas doc, intent documents, or one Jira/Linear issue with annotated images. Covers every file the recorder writes, the three clocks and how to convert between them, and how to join a Modeler / Rel app walkthrough with the deployed revision, the source code and Observe telemetry. Use when Byron gives a ContextRecorder path ("Path = …/ContextRecorder/2026-…", "I recorded a session", "process my voiceover", "usability run", "walkthrough feedback") or a context-recorder-cloud link.
+description: Break down a Context Recorder session (a folder under ~/Movies/ContextRecorder/ with recording.mp4, marks, transcript, browser events and saved MHTML pages) into actionable output — an exhaustive categorized feedback list, fix-now changes plus a future-ideas doc, intent documents, or one Jira/Linear issue with annotated images. Scripted: `recorder.py` gives the tested host, environment, UTC window and folded browser problems, a coverage ledger of every sentence and mark, frames at any offset (joined sessions too), the on-screen text of each saved page, and the Observe revision, errors and slow spans for the session window. Use when Byron gives a ContextRecorder path ("Path = …/ContextRecorder/2026-…", "I recorded a session", "process my voiceover", "usability run", "walkthrough feedback") or a context-recorder-cloud link.
 ---
 
 # Context Recorder breakdown
 
-Byron records walkthroughs with his Context Recorder app (`/Users/byronwall/repos/context-recorder`, README is the format spec). He narrates while using an app and presses a hotkey to mark moments. Your job is to turn the session into the artifact he asked for without losing a single comment.
+Byron records walkthroughs with Context Recorder (`/Users/byronwall/repos/context-recorder`; its README is the format spec). He narrates while he uses an app and presses a hotkey to mark moments. Turn the session into the artifact he asked for without losing a comment, and back each item with evidence: the image, the exact UI text, the code, and the telemetry.
 
-## 1. Inputs
+## Run the scripts first
 
-- **Session folder:** `~/Movies/ContextRecorder/<YYYY-MM-DD_HH-MM-SS>/`. The folder name is **local time** (US Eastern), not UTC.
-- **Cloud copy (optional):** `exports/cloud.json` holds `url` (`https://context-recorder-cloud.byron-711.workers.dev/s/<session>/`). Agents can read pushed sessions through its MCP (`claude mcp add --transport http sessions <cloud-url>/mcp`); the local folder is the source of truth.
-- **Byron's ask:** decides the output shape (section 6). Re-read his pasted request for categories, recipients and companions ("combine with Ilian's PR feedback", "check Observe").
-
-## 2. What's in the folder
-
-| File | Use it for | Trust |
-| --- | --- | --- |
-| `session.md` | Start here. One `##` per mark: number, offset, title (the sentence the mark landed in), image, narration window (20 s before, 10 s after, `⚑` = mark), app/window/URL, element under mouse, saved page, recent clicks. | Good summary; the title is just the nearest sentence. |
-| `transcript.json` | `{text, sentences:[{start,end,text}]}` in session time. **Read every sentence**; Byron often comments without marking. | Parakeet ASR: names and jargon get mangled ("Alien" = Ilian, "Sourcely" = Srcly). |
-| `marks.jsonl` | Raw marks: `index`, `kind` (`mark` = full frame, `screenshot` = region), `offsetSeconds`, `wallTime` (UTC), `context`, `browser` (`hovered`, `focused`, `region.elements`, `recent` last 40 events, `url`, `title`, `pageFile`). `"source":"review"` marks were added afterwards. | `browser.*` is reliable; see `context` caveat below. |
-| `frames/NNN.jpg` | Full-screen frame for every mark (from the video). | |
-| `screenshots/NNN.png` | Region shot for `screenshot` marks — usually the clearest image. | |
-| `annotations/*.png` | Byron's own markup, already flattened. Prefer these. | |
-| `browser.jsonl` | Chrome extension events, `{event:{kind,t(epoch ms),url,tabId,…}, offsetSeconds}`. Kinds: `click` (selector, text, attrs), `nav`, `console` (`level`, `message`), `error` (uncaught/rejection with `stack`), `request` (only failed or slow ones: `status`, `ms`, `requestUrl`, first 800 chars of an error body). | Covers **every tab**: filter by the tested `tabId`/host. |
-| `activity.jsonl` | Front app/window/Chrome-tab changes. | `context.browserURL` comes from AppleScript and can name a **different tab** than the one on screen. |
-| `pages/m<N>-<s>.mhtml` | Saved DOM for marks made in Chrome. Open in Chrome or grep it for text, `data-*`, component names. | |
-| `recording.mp4` | 15 fps video with audio. Pull extra frames for unmarked moments. | |
-| `session.json` | Everything above merged, in edited time, plus `segments` and `hiddenMarks`. | |
-| `edits.json`, `session-info.json` | Cuts/joins and a custom name. A joined session has only these plus `session.*`/`marks/`; its media lives in the `source` folders. | |
-| `viewer.html` | Portable viewer; give Byron this link for review. | |
-| `process.log` | Processing errors (e.g. transcription failed). | |
-| `canvas.json`, `canvas/` | Stitched scroll columns, if built. | |
-
-Ignore `*.sb-*` sidecar files and `audio.wav`.
-
-## 3. Clocks
-
-- **Session offset** (`offsetSeconds`, transcript `start`): seconds into the (edited) session. Use `m:ss` offsets when citing.
-- **UTC:** `recording start = mark.wallTime − mark.offsetSeconds`. `browser.jsonl` `t` is epoch ms. Observe needs UTC.
-- **Joined/edited sessions:** `session.json.segments` = `[{source, start, end, editedStart}]`. Video time in a source = `offset − editedStart + start`. Each mark keeps `sourceSession` and `sourceOffsetSeconds`. Write the segment table into the output so offsets can be found in the right `recording.mp4`.
-
-Quick orientation:
+`R=~/.agents/skills/context-recorder-breakdown/scripts`, `SCRATCH=<your session scratchpad>`. SESSION is the folder or just its name (`2026-11-02_16-25-02`). Never write into the recorder folder.
 
 ```bash
-S=~/Movies/ContextRecorder/<session>
-python3 - "$S" <<'EOF'
-import json, sys, collections, datetime as dt
-S = sys.argv[1]
-s = json.load(open(f"{S}/session.json"))
-m = s["marks"]
-t0 = dt.datetime.fromisoformat(m[0]["wallTime"].replace("Z", "+00:00")) - dt.timedelta(seconds=m[0]["offsetSeconds"]) if m else None
-print("duration", round(s["duration"]), "s; marks", len(m), "; sentences", len(s["transcript"]), "; start UTC", t0)
-print("segments", s["segments"])
-hosts = collections.Counter((e["event"].get("url") or "").split("#")[0] for e in s["browser"])
-print("hosts", hosts.most_common(5))
-kinds = collections.Counter(e["event"]["kind"] for e in s["browser"]); print("events", kinds)
-for e in s["browser"]:
-    ev = e["event"]
-    if ev["kind"] == "error" or (ev["kind"] == "request" and (ev.get("status") or 0) >= 400) or (ev["kind"] == "console" and ev.get("level") == "error"):
-        print(round(e["offsetSeconds"]), ev["kind"], ev.get("status"), (ev.get("message") or ev.get("requestUrl") or "")[:140])
-EOF
+python3 $R/recorder.py brief   SESSION                    # what was tested, env, UTC window, folded problems, marks with images
+python3 $R/recorder.py ledger  SESSION > $SCRATCH/ledger.md   # every sentence in ~45 s blocks, ⚑ marks inline, problems per block
+python3 $R/recorder.py pages   SESSION -o $SCRATCH/pages  # dialogs/alerts/menus open at each mark + DOM text files
+python3 $R/recorder.py pages   SESSION --grep "no loaded rows"   # which marks show a string
+python3 $R/recorder.py observe SESSION [--env NAME]       # deployed revision, warn/error logs, failed and slowest spans, with @offsets
+python3 $R/recorder.py frame   SESSION 2:11 5:30 -o DIR [--burst 2]   # frames for unmarked moments or motion bugs
 ```
 
-## 4. Workflow
+What each one settles:
 
-1. **Establish what was tested.** Host from `browser.jsonl`/`mark.browser.url` (not `activity`), the model from the URL hash (`#model=FLIGHTS_REASONERS&layout=map&modelVizSelection=<id>`), and the deployed revision (section 5). If the image and metadata disagree, say so; don't guess.
-2. **Read the whole transcript, then every mark.** Build one row per distinct comment: offset range, what Byron said (his words, cleaned), what he expected, mark numbers and images, and evidence from the page (selector, `aria-label`, failed request, console error). Unmarked comments are items too; mark them "(seen in video, not marked)" when you pull a frame for them. Visible problems Byron didn't mention are "(seen, not narrated)".
-3. **Look at the images.** Read each frame/screenshot rather than trusting the title. For moments without a mark, or motion bugs (flashing, jumps), pull frames: `ffmpeg -loglevel error -ss <sec> -i recording.mp4 -frames:v 1 -q:v 3 out.jpg` (a pair or a short burst `-vf fps=5 -t 2` shows the change).
-4. **Answer questions from sources, not speculation.** Code (section 5), the running app, and Observe. What telemetry can't answer becomes a **telemetry gap** item.
-5. **Fold in other feedback** when asked (teammates' PR reviews, Slack, Jira): dedupe against Byron's items and credit the source.
-6. **Write the output** (section 6) and a coverage line: "all N sentences and M marks reviewed".
+- **brief** picks the tested host from Chrome clicks and navigation, so it ignores background tabs (a localhost app reconnecting every minute, Jira, Statsig). It maps the host to an Observe environment (`relationalai.up.railway.app` → `staging`, `localhost` → local, any other Railway host through the daily-planning instance inventory), lists the models visited, prints the segment table of a joined session, and lists errors, failed or slow requests and console errors/warnings on that host, folded with ×N. When a session has no Chrome events (joined sessions), it falls back to macOS context and labels it **UNRELIABLE**. That URL has twice named a different tab than the one on screen, so confirm it against the images.
+- **ledger** is the coverage contract: write at least one item per block, or `none` and a reason. Byron often comments without marking, so unmarked blocks matter. Image paths are absolute; open them.
+- **pages** reads the saved DOM (`pages/*.mhtml`) at each mark. Use it to quote the exact UI string ("This result has no loaded rows.", "Update failed"), to see what was open (dialog, menu, peek), and to grep the app source for that string. The DOM text includes text that CSS may hide.
+- **observe** queries Rel app spans `41766875` and logs `43252774` for the session window ±1 min, with similar rows folded. Each first-seen time is shown as a session offset (`@10:41`), so it lines up with the ledger. Trace IDs are printed bare, which the plan viewer links. Spans carry no user, so match by time and route. If a query fails, it prints the command to adapt (OPAL help: `observability` skill).
+- **frame** maps a session offset to the right source `recording.mp4`, even after cuts and joins. Use `--burst` (4 fps) for a before/after pair on motion bugs.
 
-Fan out with subagents when the session is long: one maps items to source, one reads Observe for the session window, one gathers teammates' feedback. Give each the session path, the UTC window, the environment and the item list.
+## Workflow
 
-## 5. Modeler / Rel app joins
+1. **brief**, then read Byron's request again. It sets the output shape, the categories, and any companion sources ("combine with Ilian's PR review", "check Observe", "file for Jeremy").
+2. **ledger**: read every block. Draft one row per distinct comment: the offset range, what Byron said in his own words (cleaned up), what he expected, the ⚑ marks, and the images. Visible problems he didn't mention are "(seen, not narrated)". Comments without a mark get a `frame`.
+3. **Open the images.** `image` already prefers Byron's own markup (`annotations/`); region `screenshots/` beat full `frames/`. Don't trust a mark's title; it's just the nearest sentence.
+4. **pages** for exact strings and open UI. **observe** for anything about slowness, failures, wrong data or missing state. Both go in as evidence on the matching item.
+5. **Map items to code** in `/Users/byronwall/repos/modeler` at the deployed revision (`git show <rev>`, not `main`). Read its `AGENTS.md` and skills first. Search for the exact strings from `pages`, the `aria-label` and selectors from `ledger`, and request routes (`/api/models/<model>/task/<uuid>/body`). Give `file:line` and mark each cause as verified or suspected.
+6. **Answer open questions from sources.** Whatever the code and telemetry can't answer becomes a **telemetry gap** item: which span or attribute would have answered it.
+7. **Fold in other feedback** if Byron asked for it (teammates' PR reviews, Slack, Jira). Dedupe against his items and credit each source.
+8. **Write the output**, ending with a coverage line: "all N sentences in K blocks and M marks reviewed".
 
-**Environment from host**
+For sessions over ~10 minutes, run subagents in parallel: (a) code mapping, given the item list, revision and `pages` dir; (b) Observe deep dives, given the `observe` output, the UTC window and each item's `@offset`; (c) teammates' feedback. Keep the ledger and item list yourself.
 
-| Host | Where | Telemetry |
+## Joins for Modeler and the Rel app
+
+| Host in brief | Where it ran | Telemetry |
 | --- | --- | --- |
-| `relationalai.up.railway.app` | Railway project `modeler`, environment `staging` | Observe `environment = "staging"` |
-| `<name>.up.railway.app` (`rel-app-*`, `modeler-*`) | Railway environment of that instance; `tasks/TASK-0059-assets/instance-inventory.md` in daily-planning maps hosts to environments | Observe `environment = "<env>"` |
-| `localhost:<port>` | Byron's local server/worktree | `server/logs/redwood2_*.jsonl` (newest by mtime, see modeler `server-log-troubleshooting` skill) |
-| ECS / AWS | `service_name` `relapp-server`, `relapp-browser`, `customer.id` | browser spans carry `rum.sessionId` |
+| `relationalai.up.railway.app` | Railway project `modeler`, env `staging` | `observe` (env `staging`) |
+| other `*.up.railway.app` | the Railway env for that host, resolved from daily-planning `tasks/TASK-0059-assets/instance-inventory.md` | `observe` (or `--env` if the host isn't listed) |
+| `localhost:<port>` | Byron's local server or worktree | `modeler/server/logs/redwood2_*.jsonl`, newest first (modeler `server-log-troubleshooting` skill) |
+| AWS / ECS | `relapp-server`, plus browser spans `relapp-browser` (`rum.sessionId`), by `customer.id` | `observe` with a custom filter |
 
-**Deployed revision:** Observe logs/spans carry `resource_attributes."vcs.revision"`; Railway shows the release. Check out or diff that commit when mapping to code, not `main`.
+- **Revision:** use the `vcs.revision` that `observe` reports. Note it in the output, because items are against that build.
+- **URL hash:** `#model=<MODEL>&layout=map|full&view=logical&modelVizSelection=<uuid>` tells you the model, the layout and the selected concept or question. Reopen the URL in the app to reproduce when an item is unclear.
+- **Display vs model name:** the UI shows the ontology's display name (`OSI_FLIGHTS_INSTALL_MODE_LOGIC`), while URLs and Observe use the model (`FLIGHTS_REASONERS`). Name both once.
 
-**Map UI to code** in `/Users/byronwall/repos/modeler` (read its `AGENTS.md`/skills first): grep the `aria-label`, visible text and component names from `hovered`/`region.elements` (e.g. `canvas[aria-label="Concept map"]` → `client/apps/modeler/src/components/model-viz/concept-map-2d.tsx`). Request URLs name the API route and ids (`/api/.../task/<uuid>/body`, `/api/connection-snapshot`). Give `file:line` for each item you map, and mark root causes as verified or suspected.
+## Output shapes
 
-**Observe** (`observe` CLI; OPAL help in the `observability` skill):
+- **Exhaustive feedback list** (usability run): numbered items grouped as broken, polish, unfinished, stop doing, start doing, found in telemetry, telemetry gaps, and what worked (keep these working). Each item: a bold one-line problem, one or two sentences of detail and cause, the offsets, image links, the source credit, and any existing PR or issue that already covers it.
+- **Fix now + future ideas** (feedback on work in progress): implement the actionable items in the target repo, and collect the forward-looking ones in one future-ideas doc. Cite marks as `R<MMDD>-NNN @m:ss`.
+- **Intent documents:** pass the ledger and items to `software-design-sleuth-full` as a raw source.
+- **One issue** (`jira` skill, or modeler `create-linear-issues` for Linear): a standalone body with no local paths or task IDs, and only the most useful images, each annotated with `scripts/annotate.py`. Run `grid` to read pixel coordinates, then `render` a JSON spec with a caption bar and numbered boxes. Embed each image inline under its item, with the timestamp above it. For motion bugs, use a before/after frame pair, not a video attachment. For Jira image upload, see the memory note "Jira image embedding". File only when Byron says so.
 
-```bash
-observe query -i 41766875 -s <startZ> -e <endZ> --csv -q 'filter environment = "staging" | statsby n:count(), group_by(service_name, span_name) | topk 20, max(n)'   # spans
-observe query -i 43252774 -s <startZ> -e <endZ> --csv -q 'filter environment = "staging" and severity_text != "INFO"'                                          # logs
-```
+**Where it goes:** the owning task's `tasks/TASK-NNNN-assets/` in daily-planning; create the task first if needed. Copy images in as `mark-NNN.<ext>` in a dated subfolder, and link the session folder, `session.md` and `viewer.html` by absolute path. Cloud copy: `exports/cloud.json` → `url`. Never write into the recorder folder or a repo checkout.
 
-- Spans `41766875` (`service_name = "model-server"` on Railway), logs `43252774` (`body`, `severity_text`, `attributes."event.type"`, `trace_id`). Pad the window by a minute each side.
-- Line up each item's UTC time with spans: slow loads (`sync.*`, `model.load`, `SF::query`, `WS::Subscribe`), task runs, queueing (`limiter::pyrel_execution::acquire`), event-loop stalls (`LoopStallEvent`), errors.
-- Cite trace IDs bare (32-hex) so the plan viewer links them.
-- Spans have no user identity: other users on the same environment show up too. Narrow by time, route and ids from the browser events.
+## Pitfalls
 
-## 6. Output shapes
-
-Match Byron's ask; ask only if genuinely ambiguous.
-
-- **Exhaustive feedback list** (usability run): numbered items grouped by category — broken, polish/general UI, unfinished feature, stop doing, start doing, found in telemetry, telemetry gaps, what worked (keep these working). Each item: bold one-line problem, one or two sentences of detail and cause, offsets, image links, source credit, existing PR/issue that already covers it.
-- **Fix now + future ideas** (feedback on work in progress): implement the immediately actionable items in the target repo, and collect the forward-looking ones in one future-ideas doc. Cite marks as `R<day>-NNN` with offsets.
-- **Intent documents:** hand the extracted points to `software-design-sleuth-full` with the session as a raw source.
-- **One issue** (Jira via `jira` skill, Linear via modeler `create-linear-issues`): standalone body (no local paths or task IDs), the most useful images only, each **annotated** — a caption bar naming the item plus numbered boxes (Pillow; `tasks/TASK-0084-assets/staging-walkthrough-2026-11-02/annotated/annotate.py` in daily-planning is a working template). Embed images inline under the item they show, with the timestamp above. For motion bugs, show a before/after frame pair rather than a video attachment. Jira image upload: memory note "Jira image embedding". File only when Byron says so.
-
-**Where it goes:** the owning task's `tasks/TASK-NNNN-assets/` in daily-planning (create the task first), with images copied as `mark-NNN.<ext>` into a dated subfolder. Never into the recorder folder or a repo checkout. Link the source folder, `session.md` and `viewer.html` by absolute path, and record the session path in the task.
-
-## 7. Pitfalls
-
-- `activity.jsonl`/`mark.context.browserURL` and page title can name another tab (seen twice: a local brief and a localhost tab while staging was on screen). Trust `browser.*` and the image.
-- `browser.jsonl` mixes tabs and third-party noise (`xp.atlassian.com`, other localhost apps). Filter by `tabId` and host.
-- Only failed/slow requests are logged, so no request ids: join to Observe by time and route.
-- Transcript mis-hearings: confirm names against `reference/people/` and the repo before writing them.
-- A joined session's media and per-mark notes live in its sources; don't move or rename them.
-- Don't drop low-signal comments to make the list tidy: Byron asks for exhaustive.
-- Copy images out; never edit the recorder's files.
+- Folder names are local time (US Eastern); `wallTime` and Observe are UTC. The scripts convert.
+- Transcripts are Parakeet ASR and mangle names: "Alien" is Ilian, "Sourcely" is Srcly. Check names against daily-planning `reference/people/` before writing them.
+- The browser log records failed or slow requests only, with no request or trace IDs. Join to Observe by time and route.
+- A joined session's media and per-mark notes live in its source folders. Don't move or rename them.
+- Don't drop low-signal comments to tidy the list. Byron wants exhaustive.
