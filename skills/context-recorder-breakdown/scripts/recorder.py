@@ -6,10 +6,12 @@
   recorder.py frame   SESSION 1:23 ... -o DIR [--burst 2]   frames at session offsets (joined sessions handled)
   recorder.py observe SESSION [--env E]   deployed revision, warnings/errors, failed and slowest spans
   recorder.py pages   SESSION [-o DIR] [--grep TEXT]   open dialogs/alerts per mark from the saved MHTML; DOM text files
+  recorder.py prep    SESSION -o DIR [--assets DIR]   all of the above in one folder; ledger blocks carry screen text and telemetry
+  recorder.py check   DIR/ledger.md       coverage gate: every block has an item, every mark is cited
 
 SESSION is a folder under ~/Movies/ContextRecorder/ or just its name (2026-11-02_16-25-02).
 """
-import argparse, collections, csv, datetime as dt, email, io, json, re, subprocess, sys
+import argparse, collections, contextlib, csv, datetime as dt, email, io, json, re, shutil, subprocess, sys
 from email import policy
 from html.parser import HTMLParser
 from pathlib import Path
@@ -185,46 +187,92 @@ def cmd_brief(a):
         print(f"  ({len(s['hiddenMarks'])} marks fall inside cuts and are hidden)")
 
 
-def cmd_ledger(a):
-    path, s = load(a.session)
-    h, _, _ = tested_host(s)
-    sents = s["transcript"]
-    marks = sorted(s["marks"], key=lambda m: m["offsetSeconds"])
-    blocks, cur = [], []
-    for x in sents:
-        if cur and (x["start"] - cur[-1]["end"] > a.gap or x["end"] - cur[0]["start"] > a.span):
-            blocks.append(cur)
+def blocks(s, gap=4, span=45):
+    """Transcript sentences grouped into blocks: a new block after `gap` silent seconds or `span` seconds."""
+    out, cur = [], []
+    for x in s["transcript"]:
+        if cur and (x["start"] - cur[-1]["end"] > gap or x["end"] - cur[0]["start"] > span):
+            out.append(cur)
             cur = []
         cur.append(x)
     if cur:
-        blocks.append(cur)
+        out.append(cur)
+    if not out:  # silent session: one block per mark
+        out = [[{"start": m["offsetSeconds"], "end": m["offsetSeconds"], "text": ""}] for m in s["marks"]] or [[{"start": 0, "end": s["duration"], "text": ""}]]
+    return out
+
+
+def fold(rows):
+    """[(offset, label, body, trace[, seconds])] → one line per kind: time span, ×N, longest duration and its trace."""
+    out = collections.OrderedDict()
+    for t, label, body, trace, *secs in rows:
+        secs = secs[0] if secs else 0
+        key = re.sub(r"'[^']*'|\([^)]*\)|[0-9a-f-]{8,}|\d+", "…", f"{label} {body}")[:70]
+        f = out.setdefault(key, {"label": label, "body": body, "first": t, "last": t, "n": 0, "trace": trace, "max": 0})
+        f["n"] += 1
+        f["last"] = t
+        if secs > f["max"]:
+            f["max"], f["trace"] = secs, trace
+    return [mmss(max(f["first"], 0)) + (f"–{mmss(f['last'])}" if f["last"] - f["first"] >= 1 else "")
+            + f" ×{f['n']} {f['label']} {f['body']}".rstrip() + (f" (max {f['max']:.1f}s)" if f["max"] else "")
+            + (f" · {f['trace']}" if f["trace"] else "") for f in out.values()]
+
+
+def per_trace(evs):
+    """Keep the longest slow span per trace (a 9 s query shows up as five nested spans), noting how many were nested."""
+    best, nested, out = {}, collections.Counter(), []
+    for e in evs:
+        if e[1] == "span slow" and e[3]:
+            nested[e[3]] += 1
+            if e[3] not in best or e[4] > best[e[3]][4]:
+                best[e[3]] = e
+        else:
+            out.append(e)
+    for tr, e in best.items():
+        out.append((e[0], e[1], e[2] + (f" (+{nested[tr] - 1} nested)" if nested[tr] > 1 else ""), tr, e[4]))
+    return sorted(out, key=lambda e: e[0])
+
+
+def ledger(path, s, gap=4, span=45, screens=None, events=None):
+    h, _, _ = tested_host(s)
+    bs = blocks(s, gap, span)
+    marks = sorted(s["marks"], key=lambda m: m["offsetSeconds"])
     probs = [(e["offsetSeconds"], e) for e in s["browser"]]
-    print(f"# Ledger · {path.name}\n")
-    print(f"{len(sents)} sentences, {len(marks)} marks, {len(blocks)} blocks. Times are session offsets; UTC in brackets.")
-    print("Write at least one item per block, or `none` with a reason. Images are absolute paths: open them.\n")
+    lines = [f"# Ledger · {path.name}", "",
+             f"{len(s['transcript'])} sentences, {len(marks)} marks, {len(bs)} blocks. Times are session offsets; UTC in brackets.",
+             "Under each block's `Items:` write `- ` bullets that cite marks as ⚑NNN, or `- none: <reason>`. "
+             "`recorder.py check` fails on an empty block or an uncited mark. Images are absolute paths: open them.", ""]
     mi = 0
-    for i, b in enumerate(blocks):
-        start = b[0]["start"]
-        end = blocks[i + 1][0]["start"] if i + 1 < len(blocks) else s["duration"] + 1
+    for i, b in enumerate(bs):
+        start = 0 if i == 0 else b[0]["start"]
+        end = bs[i + 1][0]["start"] if i + 1 < len(bs) else s["duration"] + 1
         text = []
         for x in b:
-            while mi < len(marks) and marks[mi]["offsetSeconds"] < x["end"] and marks[mi]["offsetSeconds"] < end:
+            while mi < len(marks) and marks[mi]["offsetSeconds"] < min(x["end"], end):
                 text.append(f"⚑{marks[mi]['index']:03d}")
                 mi += 1
             text.append(x["text"].strip())
         while mi < len(marks) and marks[mi]["offsetSeconds"] < end:
             text.append(f"⚑{marks[mi]['index']:03d}")
             mi += 1
-        print(f"## B{i + 1:02d} · {mmss(start)}–{mmss(b[-1]['end'])} [{utc(path, s, start):%H:%M:%SZ}]\n")
-        print("> " + " ".join(text) + "\n")
-        for m in s["marks"]:
-            if start <= m["offsetSeconds"] < end or (i == 0 and m["offsetSeconds"] < start):
+        lines += [f"## B{i + 1:02d} · {mmss(b[0]['start'])}–{mmss(b[-1]['end'])} [{utc(path, s, b[0]['start']):%H:%M:%SZ}]", "",
+                  "> " + " ".join(t for t in text if t), ""]
+        for m in marks:
+            if start <= m["offsetSeconds"] < end:
                 hov = ((m.get("browser") or {}).get("hovered") or {}).get("selector", "")
-                print(f"- ⚑{m['index']:03d} {mmss(m['offsetSeconds'])} {m['kind']}: {image(path, m)}" + (f" · `{hov}`" if hov else ""))
+                lines.append(f"- ⚑{m['index']:03d} {mmss(m['offsetSeconds'])} {m['kind']}: {image(path, m)}" + (f" · `{hov}`" if hov else ""))
+                for sl in (screens or {}).get(m["index"], []):
+                    lines.append(f"  - on screen: {sl}")
         sub = {"browser": [e for t, e in probs if start <= t < end]}
-        for p in problems(sub, h):
-            print("- problem: " + fmt_problem(p))
-        print("\nItems:\n")
+        lines += ["- browser: " + fmt_problem(p) for p in problems(sub, h)]
+        lines += ["- telemetry: " + x for x in fold(per_trace([e for e in events or [] if start <= e[0] < end]))]
+        lines += ["", "Items:", "", ""]
+    return "\n".join(lines)
+
+
+def cmd_ledger(a):
+    path, s = load(a.session)
+    print(ledger(path, s, a.gap, a.span, screens(path, s)))
 
 
 def cmd_frame(a):
@@ -252,17 +300,45 @@ def observe(dataset, start, end, q):
     return list(csv.DictReader(io.StringIO(r.stdout))), ""
 
 
+def window(path, s, env_arg=None):
+    h, _, _ = tested_host(s)
+    env = env_arg or env_for(h)
+    start = (utc(path, s, 0) - dt.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    end = (utc(path, s, s["duration"]) + dt.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    return h, env, start, end
+
+
+def ns_offset(path, s, ns):
+    # ponytail: assumes one continuous recording; for joined sessions read the brief's segment table.
+    return (dt.datetime.fromtimestamp(int(ns) / 1e9, dt.timezone.utc) - utc(path, s, 0)).total_seconds()
+
+
+def events(path, s, env, start, end, slow_s=5):
+    """ERROR logs, failed spans and spans slower than `slow_s`, as (offset, label, body, trace) for the ledger."""
+    f = f'filter environment = "{env}"'
+    out = []
+    rows, _ = observe(LOGS, start, end, f'{f} and severity_text = "ERROR" | make_col msg:substring(string(body), 0, 160) '
+                                         '| pick_col timestamp, msg, trace_id | sort asc(timestamp) | limit 2000')
+    for r in rows or []:
+        out.append((ns_offset(path, s, r["timestamp"]), "log.error", " ".join(r["msg"].split()), r["trace_id"]))
+    rows, _ = observe(SPANS, start, end, f'{f} and (error = true or duration > {int(slow_s * 1e9)}) '
+                                         '| make_col msg:substring(string(error_message), 0, 160) '
+                                         '| pick_col start_time, end_time, span_name, error, msg, duration, trace_id | sort asc(start_time) | limit 5000')
+    for r in rows or []:
+        failed = r["error"] == "true"
+        body = r["span_name"] + (": " + " ".join(r["msg"].split()) if failed else "")
+        out.append((ns_offset(path, s, r["start_time"]), "span failed" if failed else "span slow", body, r["trace_id"], int(r["duration"]) / 1e9))
+    return sorted(out)
+
+
 def cmd_observe(a):
     path, s = load(a.session)
-    h, _, _ = tested_host(s)
-    env = a.env or env_for(h)
+    h, env, start, end = window(path, s, a.env)
     if env == "local":
         print("Local run: read /Users/byronwall/repos/modeler/server/logs/redwood2_*.jsonl (newest first) for this window,")
         print("or pass --env with the environment your local server exports to Observe.")
     if not env or env == "local":
         sys.exit(f"No Observe environment for {h or 'this session'}; pass --env NAME.")
-    start = (utc(path, s, 0) - dt.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
-    end = (utc(path, s, s["duration"]) + dt.timedelta(minutes=1)).strftime("%Y-%m-%dT%H:%M:%SZ")
     f = f'filter environment = "{env}"'
     queries = [
         ("Deployed revision", LOGS, f'{f} | make_col rev:string(resource_attributes."vcs.revision") | statsby n:count(), group_by(rev)'),
@@ -412,6 +488,178 @@ def cmd_pages(a):
         print(f"wrote {out}/mNNN.txt; grep them for exact UI strings, then `rg -F '<string>'` the app source")
 
 
+def screens(path, s):
+    """mark index → dialog/alert/menu lines from its saved page, only where they changed since the previous mark."""
+    out, seen = {}, set()
+    for m in s["marks"]:
+        rel = (m.get("browser") or {}).get("pageFile")
+        src = (path / (m.get("sourceSession") or ".") / rel) if rel else None
+        if not src or not src.exists():
+            continue
+        _, _, p = read_page(src)
+        for o in p.overlays:
+            if not o["text"]:
+                continue
+            line = f"{o['what']}{' “' + o['label'] + '”' if o['label'] else ''}: " + " · ".join(o["text"])[:200]
+            if line not in seen:
+                out.setdefault(m["index"], []).append(line)
+                seen.add(line)
+    return out
+
+
+MODELER = Path.home() / "repos/modeler"
+
+
+def local_checkout(h):
+    """The git checkout serving a localhost host, if that dev server is still running (lsof → process cwd → git root)."""
+    port = urlsplit(h).port
+    if not port:
+        return None
+    pid = subprocess.run(["lsof", "-nP", f"-iTCP:{port}", "-sTCP:LISTEN", "-t"], capture_output=True, text=True).stdout.split()
+    if not pid:
+        return None
+    cwd = subprocess.run(["lsof", "-a", "-p", pid[0], "-d", "cwd", "-Fn"], capture_output=True, text=True).stdout
+    cwd = next((l[1:] for l in cwd.splitlines() if l.startswith("n")), None)
+    top = subprocess.run(["git", "-C", cwd, "rev-parse", "--show-toplevel"], capture_output=True, text=True).stdout.strip() if cwd else ""
+    return Path(top) if top else None
+
+
+def code_source(h, rev, repo=None):
+    """(repo, tree, description) to search: the deployed revision, the running local checkout, or origin/main."""
+    if repo:
+        return Path(repo).expanduser(), None, f"{repo} (working tree)"
+    if rev and subprocess.run(["git", "-C", str(MODELER), "cat-file", "-e", f"{rev}^{{commit}}"], capture_output=True).returncode == 0:
+        return MODELER, rev, f"Modeler @ {rev} (deployed revision)"
+    if env_for(h) == "local":
+        top = local_checkout(h)
+        if top:
+            return top, None, f"{top} (working tree of the dev server still listening on {h})"
+        return MODELER, "origin/main", f"Modeler @ origin/main (local run; its server isn't running any more, so pass --repo <worktree> to be exact)"
+    hint = f" (revision {rev} isn't local: `git -C {MODELER} fetch origin {rev}`, then rerun)" if rev else " (revision unknown; pass --rev or --repo)"
+    return MODELER, "origin/main", "Modeler @ origin/main" + hint
+
+
+def code_anchors(s, repo, tree, desc):
+    """git grep each aria-label Byron pointed at (hovered, focused, inside a region shot); tree None = working tree."""
+    labels = collections.OrderedDict()
+    for m in s["marks"]:
+        b = m.get("browser") or {}
+        els = [b.get("hovered") or {}, b.get("focused") or {}] + list(((b.get("region") or {}).get("elements")) or [])
+        for el in els:
+            lab = ((el.get("attrs") or {}).get("aria-label") or "").strip()
+            # UI copy only: chart points and table cells ("79.5\nAircraft count: 328") are data, not code.
+            if 3 <= len(lab) <= 60 and "\n" not in lab and not re.search(r"\d", lab):
+                labels.setdefault(lab, []).append(m["index"])
+    where = [tree] if tree else []
+    lines = [f"# Code anchors · {desc}", "",
+             "aria-labels from the elements Byron pointed at, found in source. Labels with no hit are built at runtime: search their parts.", ""]
+    if not labels:
+        return "\n".join(lines + ["(no aria-labels on marked elements)"])
+    args = ["git", "-C", str(repo), "grep", "-n", "-F"]
+    for lab in labels:  # as a string literal or JSX text, so "Container" doesn't match JSXExpressionContainer
+        for q in (f'"{lab}"', f"'{lab}'", f"`{lab}`", f">{lab}<"):
+            args += ["-e", q]
+    args += [*where, "--", "client", "server", ":!client/packages/fixtures", ":!*.json", ":!*test*", ":!*.md"]
+    hits = subprocess.run(args, capture_output=True, text=True).stdout.splitlines()
+    missing = []
+    for lab, idx in labels.items():
+        found = [(h.split(":", 1)[1] if tree else h) for h in hits
+                 if any(q in h for q in (f'"{lab}"', f"'{lab}'", f"`{lab}`", f">{lab}<"))][:3]
+        if not found:
+            missing.append(lab)
+            continue
+        lines.append(f"- “{lab}” (⚑{', ⚑'.join(f'{i:03d}' for i in sorted(set(idx)))})")
+        lines += [f"  - {h[:160]}" for h in found]
+    # Built at runtime ("Sort by Carrier code" from `Sort by ${label}`): try each word prefix as a template literal
+    # and keep the longest one that is in the source.
+    cands = {lab: [" ".join(lab.split()[:i]) + " ${" for i in range(len(lab.split()) - 1, 0, -1)] for lab in missing}
+    pres = sorted({p for ps in cands.values() for p in ps})
+    if pres:
+        args = ["git", "-C", str(repo), "grep", "-n", "-F"]
+        for pre in pres:
+            args += ["-e", pre]
+        hits = subprocess.run(args + [*where, "--", "client", "server", ":!*test*", ":!*.md"], capture_output=True, text=True).stdout.splitlines()
+        groups = collections.OrderedDict()
+        for lab, ps in cands.items():
+            pre = next((p for p in ps if any(p in h for h in hits)), None)
+            if pre:
+                groups.setdefault(pre, []).append(lab)
+        for pre, labs in groups.items():
+            lines.append(f"- “{pre}…}}” builds {', '.join(f'“{x}”' for x in labs[:4])}{' …' if len(labs) > 4 else ''}")
+            lines += [f"  - {(h.split(':', 1)[1] if tree else h)[:160]}" for h in hits if pre in h][:2]
+            missing = [x for x in missing if x not in labs]
+    if missing:
+        lines += ["", f"No hit ({len(missing)}; usually concept, question or model names from data): " + ", ".join(f"“{x}”" for x in missing[:25])]
+    return "\n".join(lines)
+
+
+def cmd_prep(a):
+    """Build the evidence pack: everything an agent needs to write the items, in one folder."""
+    path, s = load(a.session)
+    out = Path(a.out).expanduser()
+    (out / "pages").mkdir(parents=True, exist_ok=True)
+    note = lambda msg: print(msg, file=sys.stderr)
+    buf = io.StringIO()
+    with contextlib.redirect_stdout(buf):
+        cmd_brief(argparse.Namespace(session=str(path)))
+    (out / "brief.md").write_text("```\n" + buf.getvalue() + "```\n")
+
+    with contextlib.redirect_stdout(io.StringIO()):
+        cmd_pages(argparse.Namespace(session=str(path), out=str(out / "pages"), grep=None))
+    scr = screens(path, s)
+
+    h, env, start, end = window(path, s, a.env)
+    evs, rev = [], None
+    if a.no_observe or not env or env == "local":
+        note(f"observe: skipped ({'--no-observe' if a.no_observe else 'no Observe environment for ' + (h or 'this session') + '; pass --env'})")
+    else:
+        buf = io.StringIO()
+        with contextlib.redirect_stdout(buf):
+            cmd_observe(argparse.Namespace(session=str(path), env=env))
+        (out / "observe.md").write_text(buf.getvalue())
+        m = re.search(r"## Deployed revision\n(?:\$.*\n)?\s+([0-9a-f]{40})", buf.getvalue())
+        rev = m.group(1) if m else None
+        evs = events(path, s, env, start, end, a.slow)
+        note(f"observe: env {env}, revision {rev}, {len(evs)} timeline events")
+
+    (out / "ledger.md").write_text(ledger(path, s, screens=scr, events=evs))
+    repo, tree, desc = code_source(h, a.rev or rev, a.repo)
+    (out / "code.md").write_text(code_anchors(s, repo, tree, desc))
+    note(f"code: {desc}")
+
+    img = Path(a.assets).expanduser() if a.assets else out / "images"
+    img.mkdir(parents=True, exist_ok=True)
+    for m in s["marks"]:
+        src = Path(image(path, m)) if image(path, m) else None
+        if src and src.exists():
+            shutil.copy2(src, img / f"mark-{m['index']:03d}{src.suffix}")
+    for name in ("brief.md", "ledger.md", "observe.md", "code.md", "pages/"):
+        if (out / name).exists():
+            print(out / name)
+    print(f"{img}/mark-NNN.*")
+
+
+def cmd_check(a):
+    """Coverage gate for a filled-in ledger: every block has an item and every mark is cited."""
+    text = Path(a.ledger).expanduser().read_text()
+    empty, marks, cited = [], set(), set()
+    for blk in re.split(r"^## ", text, flags=re.M)[1:]:
+        head = blk.split("\n", 1)[0]
+        body, _, items = blk.partition("\nItems:")
+        marks |= set(re.findall(r"^- ⚑(\d{3})", body, re.M))
+        bullets = [l for l in items.splitlines() if l.strip().startswith("- ")]
+        if not bullets:
+            empty.append(head.split(" ·")[0])
+        cited |= set(re.findall(r"⚑(\d{3})", items))
+    missing = sorted(marks - cited)
+    print(f"{len(re.findall(r'^## B', text, re.M))} blocks, {len(empty)} without items; {len(marks)} marks, {len(missing)} uncited")
+    if empty:
+        print("Blocks without items: " + ", ".join(empty))
+    if missing:
+        print("Marks not cited in any item: " + ", ".join(f"⚑{m}" for m in missing))
+    sys.exit(1 if empty or missing else 0)
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -426,6 +674,14 @@ def main():
     o = sub.add_parser("observe"); o.add_argument("session"); o.add_argument("--env"); o.set_defaults(fn=cmd_observe)
     p = sub.add_parser("pages"); p.add_argument("session"); p.add_argument("-o", "--out"); p.add_argument("--grep")
     p.set_defaults(fn=cmd_pages)
+    r = sub.add_parser("prep"); r.add_argument("session"); r.add_argument("-o", "--out", required=True)
+    r.add_argument("--assets", help="copy mark images here as mark-NNN.* (default OUT/images)")
+    r.add_argument("--env"); r.add_argument("--no-observe", action="store_true")
+    r.add_argument("--rev", help="Modeler commit to search (default: the deployed revision from Observe)")
+    r.add_argument("--repo", help="checkout to search in its working tree, e.g. the worktree a local run served")
+    r.add_argument("--slow", type=float, default=5, help="spans slower than this many seconds join the ledger")
+    r.set_defaults(fn=cmd_prep)
+    c = sub.add_parser("check"); c.add_argument("ledger"); c.set_defaults(fn=cmd_check)
     a = ap.parse_args()
     a.fn(a)
 
