@@ -1,6 +1,6 @@
 ---
 name: 100x
-description: The craft pass that follows `10x`. It takes a UI that is already structurally good and gives it pixel-level care, covering every state and edge case. It inspects each region at high zoom, writes a defect ledger, fixes everything it finds, and proves it with matched before/after screenshots. Use when Byron says `/100x` or `$100x`, asks for "one more order of magnitude", "one last 10x", "professional polish and completeness", or says a UI "still feels sloppy" after a redesign.
+description: The craft pass that follows `10x`. It takes a UI that is already structurally good and gives it pixel-level care, covering every state and edge case. It inspects each region at high zoom, writes a defect ledger, fixes everything it finds, and proves it with matched before/after screenshots. Use when Byron says `/100x` or `$100x`, asks for "one more order of magnitude", "one last 10x", "professional polish and completeness", or says a UI "still feels sloppy" after a redesign. For a target with no UI (a skill, script, CLI, or workflow), applies the same every-state, every-edge-case pass to the task itself.
 argument-hint: "<target: URL, route, component path, or PR> [-- focus areas or constraints]"
 user-invocable: true
 ---
@@ -10,6 +10,16 @@ user-invocable: true
 Byron runs this in a new thread after `10x`. By now the structure is right. What's left is the gap between "radically better" and "this feels like a professional product." That gap is made of many small things: alignment, rhythm, states, edge cases, copy, and motion. 10x looks at the screen. 100x looks at every square inch of it, in every state.
 
 Don't ask questions. Record judgment calls under "Decisions for you."
+
+## Targets with no UI
+
+If the target has no UI (a skill, a script, a CLI, an API, a doc, a workflow), keep the method and replace the visual mechanics:
+
+- **State matrix:** run it for real on bad inputs as well as good ones. Cover empty, partial, and complete inputs; missing, malformed, and huge inputs; a missing tool or permission; the wrong folder; a second run; and a run inside an unusual environment (another repository, a symlink, a path with spaces).
+- **Ledger:** use the same table and severity levels. S1 is a crash, a wrong result, or a change to something the user did not ask to change. S2 is a confusing message, a stack trace in place of a sentence, or output that hides what happened. S3 is wording, ordering, and consistency with the project's other commands or docs. Expect fewer entries than on a screen. A small target can have under 15; don't invent defects to reach a count.
+- **Fix:** fix every S1 and S2, and the quick S3s. Keep the scope rule: no new capabilities.
+- **Prove it:** for each fixed row, show the command and its output before and after in place of a contact sheet. Add a test only for an S1 that is likely to come back.
+- **Deliver:** reply with the ledger counts, the fixes by effect, **Decisions for you**, and **Next**. Skip `byron-ui-taste`, the craft checklist, screenshots, and `compare.html`.
 
 ## Inputs
 
