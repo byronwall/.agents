@@ -74,6 +74,7 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 - Do not bake tables or checklists into diagram images.
 - Choose a palette for the context instead of fixed hard-coded colors.
 - Group labels must not collide with group borders.
+- Titles, subtitles, labels and notes in a diagram meant for others are Byron's prose: run them through `write-byron-voice` before rendering.
 
 ## Working method
 

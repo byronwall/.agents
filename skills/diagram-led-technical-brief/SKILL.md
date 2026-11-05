@@ -133,6 +133,7 @@ Give every rendered image enough framing to stand alone:
 - **Subtitle:** state the practical change or takeaway in one sentence fragment. It should clarify why the flow matters without repeating the title.
 - **Legend:** embed a compact legend when color, border, line style, or shape encodes meaning. Name the semantics directly, such as “Green: behavior added by this PR.” Omit the legend when labels and geometry already explain everything.
 - **Identity:** include a PR, project, system, or feature identifier only when it helps a detached image retain context.
+- **Voice:** Titles, subtitles, labels and notes in a diagram meant for others are Byron's prose: run them through `write-byron-voice` before rendering.
 
 Place title and subtitle at the top. Prefer a quiet legend at the bottom so it does not compete with the reading path. Keep all helper text visibly secondary to the diagram.
 
