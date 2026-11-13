@@ -72,6 +72,13 @@ application core + deterministic fake
 
 [At most three. Each must include the decision output, evidence needed, and fallback. Omit when none.]
 
+## Retire this initiative
+
+After the last milestone lands, the same agent retires this initiative in a final stack layer:
+
+- Durable docs that receive the lasting facts: [paths]
+- Remove this planning folder and add the closure record.
+
 ## Below the cut line
 
 - [Deferred generalization]

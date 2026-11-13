@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0 — Retire when the work lands
+
+- Shipping an initiative's last milestone now authorizes its retirement. The agent that lands it retires the plan in a final stack layer.
+- Plans end with a `Retire this initiative` step that names the durable docs. The template and the plan quality checks include it.
+- A milestone that stays open gets its true status in the map. Shipped milestones never stay `planned`.
+
 ## 0.7.2 — Required map shapes and overlap check
 
 - SKILL.md lists the source, `first_proof`, and `fast_local_loop` shapes the validator requires, after three runs failed on them.

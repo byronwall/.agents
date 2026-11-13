@@ -329,7 +329,7 @@ Initiative status is separate from phase and artifact freshness.
 Use `planned`, `active`, `paused`, `completed`, or `cancelled`. Completion requires intent and implementation evidence.
 
 Retirement requires explicit user approval before file deletion. A clear initial retirement request counts; do not ask twice.
-Completion, cancellation, or a full planning run does not authorize retirement.
+Shipping the last milestone authorizes retirement: the agent that lands it retires the initiative in a final PR. Cancellation or a full planning run does not authorize retirement.
 Reconcile intent with code, update durable docs, and write a compact closure record before removing approved planning files.
 See [lifecycle and retirement](references/lifecycle-and-retirement.md) for the gate and status view.
 

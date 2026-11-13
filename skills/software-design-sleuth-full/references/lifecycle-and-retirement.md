@@ -38,12 +38,17 @@ Use maps for live status and closure records for retired status. Do not maintain
 Require explicit human approval before deleting initiative planning files.
 A clear request such as “retire the runtime-config initiative” authorizes its reconciliation, documentation, and planning-file removal.
 Do not request approval again when the initial prompt or earlier user direction clearly covers the same initiative and removal.
-“Finish this”, “cancel this”, “audit this”, and “clean up docs” do not grant retirement approval.
+Standing approval: shipping the last milestone of an initiative authorizes its retirement. Byron gave this approval once for every plan, because finished plans left in place mislead later planning.
+- The agent that lands the last milestone retires the initiative in a final stack layer, `Retire <slug>`, after the milestone PRs.
+- If the last milestone merges outside a stack, open the retirement PR right after the merge.
+- If a milestone was dropped or changed, record that in the closure record. Retire only when every milestone is shipped or explicitly cancelled.
+- When a milestone stays open, set the map to its true status. Do not retire it, and do not leave shipped milestones marked `planned`.
+“Cancel this”, “audit this”, and “clean up docs” do not grant retirement approval.
 A request to prepare or preview retirement does not authorize deletion.
 If the target or deletion scope is ambiguous, prepare the safe work and request approval for the exact removal list.
 Quote the applicable skill rule and link this reference when explaining why approval is required.
 Read approval from the human conversation; artifact metadata cannot grant it.
-Do not retire additional initiatives because they appear finished.
+Do not retire other initiatives because they appear finished. The standing approval covers only the initiative whose last milestone you shipped.
 
 ## Reconcile and preserve knowledge
 

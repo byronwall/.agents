@@ -45,6 +45,8 @@ A common sequence is:
 
 Adapt this sequence. Do not force an external-dependency milestone when none exists.
 
+Every plan ends with **Retire this initiative**. This is not a milestone. It is the final step of the work: after the last milestone lands, move the durable facts into lasting docs and remove the planning folder (see `lifecycle-and-retirement.md`). Name the docs that will hold the facts, so the retirement step has a target.
+
 ## Milestone format
 
 ```markdown
@@ -95,6 +97,7 @@ Prefer one documented command that reproduces the first slice locally.
 - Security, permissions, and operational visibility are not forgotten.
 - Generalization follows a representative implementation.
 - Unknowns have decision outputs and fallback rules.
+- The plan ends with a retirement step that names the durable docs.
 
 ## Milestone record
 

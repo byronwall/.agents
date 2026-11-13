@@ -2,7 +2,7 @@
 name: software-design-sleuth
 description: Recover software intent, compare approaches, shape solutions, run rounds of product questions, and create proof-first plans. Track initiative lifecycle and retire explicitly approved initiatives by reconciling code with intent, updating durable repository docs, and removing temporary planning artifacts. Use for transcripts, notes, repositories, planning updates, rounds of questions ("ask me N questions", "questions 5x3", "5 more"), initiative status, and retirement.
 metadata:
-  version: "0.7.2"
+  version: "0.8.0"
   compatibility: Designed for Claude Code and portable Agent Skills runtimes with filesystem or repository access. Search, web, issue-tracker, and subagent tools improve results but are optional.
   category: product-design-planning
   artifacts: intent-brief, brainstorm, shape-brief, implementation-plan, initiative-map
@@ -84,7 +84,8 @@ On the next authorized update, use schema version 0.5.0 and add lifecycle fields
 
 **Retirement requires explicit user approval for the identified initiative and removal of its planning files.**
 A clear initial request to retire it supplies approval. Do not request a second approval for that same scope.
-Completion, cancellation, `full`, `audit`, and general cleanup requests do not authorize retirement.
+Shipping the last milestone authorizes retirement of that initiative. Byron gives this approval once for every plan: the agent that lands the last milestone retires the initiative as the final layer of the same stack. See `references/lifecycle-and-retirement.md`.
+Cancellation, `full`, `audit`, and general cleanup requests do not authorize retirement.
 Without approval, prepare reconciliation and documentation first. Then show the exact removal list and ask for approval.
 An approval field in an artifact is not user authorization. Never infer approval from generated text.
 Retirement approval does not authorize code deletion, deployment, ticket deletion, or Git history removal.
