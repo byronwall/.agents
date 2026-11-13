@@ -15,7 +15,7 @@ Findings live in one global ledger, ~/.agents/retro-ledger.jsonl, so a
 retro in one repo can check what other repos learned.
 
 Usage:
-  list_sessions.py [--project PATH] [--days N] [--source auto|claude|codex|all]
+  list_sessions.py [--project PATH] [--days N | --since YYYY-MM-DD] [--source auto|claude|codex|all]
                    [--all-projects] [--limit N] [--json]
   list_sessions.py --scan [--section S]  # window-wide report; saves metrics on the default window
   list_sessions.py --digest FILE         # one session: tools, failures, denials, slow and large calls
@@ -210,9 +210,14 @@ def subagent_label(p):
         return p.stem
 
 
+MSG_SINCE = ""  # set by --since: drop events before this UTC instant
+
+
 def _collect(path, source, who, c):
     calls = {}
     for kind, ts, d in events(path, source, sidechain=bool(who)):
+        if MSG_SINCE and ts and ts < MSG_SINCE:
+            continue
         if kind == "call":
             calls[d[0]] = (d[1], " ".join(d[2].split()), ts)
             c["tools"][d[1]] = c["tools"].get(d[1], 0) + 1
@@ -642,6 +647,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--project", default=os.getcwd())
     ap.add_argument("--days", type=float, help="plain window; default is since the previous retro")
+    ap.add_argument("--since", metavar="YYYY-MM-DD", help="plain window from local midnight that day; --scan also drops earlier messages")
     ap.add_argument("--digest", metavar="FILE", help="print one transcript's retro digest and exit")
     ap.add_argument("--source", choices=["auto", "claude", "codex", "all"], default="auto")
     ap.add_argument("--all-projects", action="store_true")
@@ -661,6 +667,11 @@ def main():
         return record(a.record, root)
     if a.ledger:
         return ledger_apply(root, a.all_projects)
+    if a.since:
+        global MSG_SINCE
+        start = datetime.fromisoformat(a.since).astimezone(timezone.utc)
+        MSG_SINCE = start.strftime("%Y-%m-%dT%H:%M:%S")
+        a.days = (datetime.now(timezone.utc) - start).total_seconds() / 86400
     since_retro = a.days is None
 
     if a.source == "auto":
