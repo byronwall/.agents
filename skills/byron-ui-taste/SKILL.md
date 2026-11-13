@@ -55,6 +55,18 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 - Keep prose at a comfortable reading width; let tables bleed wider than the text column.
 - In two-button dialogs, spread the buttons so the next action is clearly the primary one.
 
+## Signal rows and drill-down
+
+These rules came from the job-hunt fit breakdown (Nov 2026). Byron called the result "awesome" and "really nice". Snapshots: [rows at rest](references/snapshots/fit-breakdown-rows.png), [the Jev popover](references/snapshots/fit-breakdown-jev-popover.png), and [the requirements popover](references/snapshots/fit-breakdown-requirements-popover.png). The snapshot text is a neutral stand-in (a vendor review); the layout, marks, and colors are the real UI.
+
+- One row per signal: a label column, a small fixed-width mark (bar, scale, or pips), and one line of text. Related signals share one grid and one row style, with no dividers or cards between them.
+- Show the summary; put the full detail one click away. The whole row is the button. It opens a popover anchored under the row, over the content below, so nothing shifts. Only one popover is open at a time. Esc or an outside click closes it. A small chevron at the row's right edge turns when open; the open row keeps its pressed tint.
+- When a signal has many parts (17 model answers, 10 requirements), the row shows only the few that matter most. Rank misses first, then unsettled answers, then the strongest wanted features. Leave out parts that are nearly always the same; they say little.
+- Color only what needs attention: red for a miss or red flag, amber for an unsettled answer, green for a wanted feature, neutral gray for everything else. A screen of green "all fine" marks is noise.
+- Show a probability as a thin bar plus a tabular number. Group the full set under small caps headers (Gates, The work, Red flags). Byron liked this grid enough to keep it, but in the popover, not inline.
+- When items in a one-line summary may not fit, let them wrap onto a hidden second line (`flex-wrap` with a fixed height and `overflow: hidden`), so an item drops out whole instead of being cut mid-word.
+- Replace a guessed signal when better data exists. Rows that guessed role and location from the title went away once model answers from the full text were available. Do not show both.
+
 ## Interaction
 
 - Every interactive element has a visible hover and pressed state (see "Controls and states"). Use `emil-design-eng` motion: short color fades of 120–160ms, no `transition: all`, respect reduced motion.
@@ -102,5 +114,7 @@ These rules came from the job-hunt controls pass (Nov 2026). Byron called the re
 - Get the change working end to end in the UI first, then simplify. Prefer the least new code.
 - Verify in the browser at Byron's wide-monitor size before reporting.
 - Audit controls with scripts, not by eye. Use the `state-sheet` skill for a contact sheet of every control at rest, on hover, with focus, and pressed. Then run `node ~/.agents/skills/byron-ui-taste/scripts/audit-controls.mjs --base <url> --pages /,/list`. It lists targets under 24px, missing pointer cursors and focus styles, mixed heights in a toolbar row, and selections that change font weight. Run it before and after.
+- Before adding a rule for a selector, search the stylesheet for it. Earlier passes may define the same selector again further down, and the later rule wins. Fix the existing rules in place instead of adding a third.
+- Prove a popover with numbers: the next element's `top` is the same before and after open, and `elementFromPoint` inside the popover hits the popover. A screenshot taken too early can miss it.
 - Audit scripts must not change data. Block every non-GET request. Release a held mouse button away from the control, so no click fires. A press in an early screenshot run shortlisted and dropped real job postings. After each run, check `git status` for data the app writes.
 - Disable transitions before you read computed styles. A style read in mid-transition reports the old value and gives a false miss.
