@@ -64,18 +64,55 @@ the `start_session` calls in parallel with:
     the stack**
   - the report: branch name, what changed, verification results, and anything
     left over
+  - planning-only workers (sleuth, design): "Ask Byron with `AskUserQuestion`,
+    in rounds, until the open choices are clear." Never "end with N questions":
+    on Oct 27 three planners wrote their questions in chat, and Byron had to
+    ask for the question tool three times.
+  - a worker that merges or marks its own PRs ready: paste Byron's approval
+    word for word ("Merge as you go") and tell it to quote that in the
+    command's description. Without the quote, auto mode refused worker merges
+    as "Merge Without Review", and Byron had to type each merge again.
 
-Run at most **3 workers at once that start a dev server, run e2e, or run the
-full check suite**; queue the rest as the next wave. On Oct 21, seven at once
+Run at most **3 live worker sessions at once** (Byron: "3 is good. Add new
+ones as others finish"). Queued layers still get their session now, in
+Byron's turn, as **parked** workers (see "Start queued layers up front"
+below). A parked worker only reads, so it does not count toward the 3. On Oct 21, seven at once
 made the first page load take 4–5 minutes, a check chain take 430s, and a
 Playwright run time out; on Oct 24 two parallel vitest runs swapped the Mac.
-Workers that only read or edit docs don't count. Tell each heavy worker to
+Tell each worker to
 stop its dev server and drop its audit database before reporting.
 
 Then update the plan with each step's `session`, wrap up, and end the turn.
 Do not wait, poll, or predict results.
 
+### Start queued layers up front
+
+A worker's report wakes you as an automated turn, and `start_session` is
+refused there ("Start sessions only on the user's own words"). On Nov 10 the
+host-contract orchestrator left step 7 as a card, and the stack stopped
+overnight. So create every session the run needs in Byron's turn, at launch:
+
+- Start each queued layer now as a parked worker. Its brief says: "Wait. Edit
+  nothing until the orchestrator messages you that `<parent branch>` landed.
+  Meanwhile only read." Name the plan docs by branch and path
+  (`git show <branch>:<path>`), because they may not be on main yet.
+- Release a parked worker with `SendMessage` and the exact branch to build on.
+  `SendMessage` works in an automated turn.
+- Reuse a finished worker for a later layer when no parked one fits. Clear its
+  context first with `mcp__ccd_session_mgmt__clear_session` (if that is
+  refused, skip it and say "ignore the earlier task" in the first line). Then
+  send the full brief with `SendMessage`, and tell it to run
+  `git switch -c <new-branch> <parent-branch>` in its own worktree.
+
 ### When `start_session` is refused
+
+Don't retry it, and don't leave the layer as a card. In order:
+
+1. Release a parked worker, or reuse a finished one (above).
+2. If none exists, build the layer in the orchestrator's own worktree:
+   `git switch -c <layer-branch> <parent-branch>`, do the work, run the
+   checks, and commit. Say in one line that you built it here because no
+   session was available.
 
 Over Remote Control, `start_session` is refused ("you can start a session only
 on a message typed in the desktop app"). Tell Byron in one line, then fall back
@@ -99,16 +136,10 @@ round. Add this to every fallback brief:
 - **Scope change for a running worker:** send it with `SendMessage` to its
   `local_…` id, telling it to make the change as its own commit on the same branch.
   The first line must say what the message is about.
-- **New dependent work** ("queue it after X"): add a pending step, then start it
-  from X's branch (`source_branch`) once X reports and you've checked its
-  diff. Never start it early on a guess.
-- **Byron will be away:** a worker's report wakes you as an automated turn, and
-  `start_session` is refused there. So when Byron says he'll step away, or the
-  chain is long, start every queued worker now, in his turn. Each brief says
-  "wait: edit nothing until the orchestrator messages you that `<parent branch>`
-  landed", names the plan docs by branch and path (`git show <branch>:<path>`;
-  they may not be on main yet), and allows only reading meanwhile. Release each
-  worker with `SendMessage` and the exact branch to restack on.
+- **New dependent work** ("queue it after X"): add a pending step. In Byron's
+  turn, start its session now as a parked worker. Release it on X's branch
+  only after X reports and you've checked its diff. Never release it early on
+  a guess.
 - **How a waiting worker waits:** on your `SendMessage`, or on an exact head
   branch (`gh pr list --head <branch> --state merged`). Never on a marker
   through `gh pr list --search`: GitHub search is fuzzy and matched step 2's PR
@@ -138,7 +169,7 @@ its worktree and what is left. Don't start a new session for it.
 The note is a claim, not proof. Check `git log`/`git diff main...<branch>` and
 the stated test results before marking the step done. Then:
 
-- start any queued layer that was waiting on it
+- release the parked worker that waits on it (`SendMessage` with the branch)
 - send fixes back to the same worker (`SendMessage`) instead of starting a new one
 - once every layer is in, assemble the stack
 
@@ -193,9 +224,11 @@ foreground `gh pr checks --watch` (one ran 601s).
   merges it when checks pass. If the repo has auto-merge off, tell Byron once
   (Settings → General → Allow auto-merge) and use the fallback below.
 - Stacked PRs: do not queue layers with `gh pr merge` or retarget them with
-  `gh pr edit --base`. Wait for the top layer's checks, then run
-  `gh stack merge <top-pr> --yes`. It merges that PR and every layer below it
-  in one step.
+  `gh pr edit --base`. `gh stack merge` does not check CI: on Oct 30 it
+  merged a stack whose `proofs` job had failed. Run
+  `gh pr checks <top-pr> --watch` with `run_in_background: true`, and on a
+  green exit run `gh stack merge <top-pr> --yes`. It merges that PR and every
+  layer below it in one step. On a red exit, read the failure first.
 - Fallback without auto-merge: one `gh pr checks <n> --watch` with
   `run_in_background: true`, then merge on its exit notice.
 
