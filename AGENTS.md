@@ -7,8 +7,10 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 - A scripted replace (`python3`, `sed`, `perl`) must assert its match count, so a stale match fails instead of exiting 0 with nothing changed.
 - The shell is zsh. Quote globs in arguments (`grep --include='*.ts'`), pass file lists as arrays (`files=(a b); cmd "${files[@]}"`), and don't start an `echo` argument with `=`.
 - zsh reads `$var:r`, `$var:h` and similar as modifiers. Write `${var}:` when a colon follows a variable.
+- When you launch Chrome or Chrome for Testing directly (headless screenshots, scripts), pass `--use-mock-keychain --password-store=basic`. Without them, macOS shows Byron a keychain password prompt for "Chromium Safe Storage".
 - macOS has no GNU `timeout`. Use the tool call's own timeout, or `gtimeout` if it is installed.
 - `git cherry-pick` has no `-q` flag; with it, nothing is picked.
+- Never write `cat > file` (or any command that reads stdin) without a heredoc, pipe, or `< /dev/null`. The tool shell has no input, so the command waits forever. Use the Write tool to create a file.
 - Wait on a background job through its exit notice or a file it writes, not `pgrep -f <pattern>`. The waiting shell's own command line contains the pattern, so `until ! pgrep -f ...` never ends.
 - Unset `GIT_DIR` and other `GIT_*` variables before a git hook runs tests. Otherwise a test's `git init` or commit acts on the real repository.
 
@@ -27,6 +29,42 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 - Prefer direct control flow and short call stacks.
 - Avoid DTOs, normalization layers, and extra parsing unless they solve a concrete boundary problem.
 - Prefer context or direct data pass-through when it stays clear.
+
+## Thread titles
+
+Name every thread so Byron can read its state and topic in the sidebar. Use this format:
+
+`<status><type>[<attention>] <ID> · <summary>`
+
+- Status (always, first emoji):
+  - 🔍 investigating: reading code, research, diagnosis
+  - 📐 planning: design, comparing options, writing a plan
+  - 🔨 building: editing code or files
+  - 🧪 testing: running tests, builds, browser checks
+  - 👀 in review: PR is open, waiting on review or CI
+  - ✅ done: work merged, shipped, or answered
+  - 💤 parked: deferred or abandoned
+- Type (always, second emoji):
+  - ✨ feature, 🐛 bug fix, 🧹 refactor or cleanup, 📝 docs or writing, 🔧 config or tooling, 💬 question or research, 🗂️ planning or tasks
+- Attention (third emoji, only when Byron must act):
+  - ❓ needs input: a question or decision waits on Byron
+  - 🚧 blocked: an approval, a credential, or an outside step waits on Byron
+  - 💥 failed: CI, a build, or a command failed and work stopped
+- ID: use the most useful identifier.
+  - Use `PR-1231` when a PR exists.
+  - Otherwise use `TASK-0142`, an issue number such as `#88`, or the repository name.
+  - Leave out the ID when nothing fits.
+- Summary: 2-5 words about the topic, not the status. Write "Workspace invites", not "Working on invites".
+- Examples:
+  - `🔍🐛 TASK-0142 · Invite email bounce`
+  - `🧪✨❓ PR-1231 · Workspace invites`
+  - `✅📝 planning · Thread title rules`
+- Set the title in your first message of the thread.
+- Retitle on each status change, when attention starts or ends, and when the ID changes.
+- Before you end a turn that waits on Byron or finishes the work, make sure the title is correct.
+- Keep the type emoji the same unless the work clearly changes kind.
+- In Claude Desktop, use `mcp__ccd_session_mgmt__set_session_title`. In Codex, use the thread rename tool.
+- For Codex orchestrator families, put these emojis after the family prefix: `⭐ 🧭 00 · 🔨✨ Planner rewrite`.
 
 ## Codex task creation (Codex only)
 
@@ -91,6 +129,12 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 - Treat difficulty discovering controls, navigating the interface, understanding labels, completing the flow, or operating it with accessibility-oriented interaction as product evidence. Do not coach the verifier around these problems merely to finish the test; report them as possible UX or accessibility defects with reproduction details.
 - The orchestrator owns the feedback loop: dispatch implementation and browser-verification workers, pass verification evidence back to the coding worker, request focused fixes, and send the revised behavior back for clean verification. Keep those worker contexts separate while continuing the loop until the requested terminal condition is reached or user input is required.
 
+## Plans and retirement
+
+- A `docs/intent/<slug>` plan from the software-design-sleuth skill is temporary. Retire it when its work lands.
+- The agent that ships a plan's last milestone retires the plan in a final PR: move the lasting facts into durable docs, and remove the planning folder. Byron approves this once for every plan.
+- When you ship a milestone but not the last one, set that milestone's status in the plan's map in the same PR.
+
 ## Skill copies
 
 - Create new global skills in `~/.agents/skills/<skill-name>/`.
@@ -114,6 +158,13 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 - Simple `index.html` files and other single-file demos can use a smaller stack.
 - Do not convert an existing project to this stack unless Byron requests the
   conversion.
+
+## Mockups
+
+- Ground every UI mockup in the current UI. Before you ask Codex (or any image tool) for a mockup, capture a screenshot of the real screen. Pass it as a reference image (`-i`) and ask for changes to that screen.
+- Keep the app's real shell, navigation, type, spacing, and colors in the mockup. Change only the part under design.
+- If the screen does not exist yet, use a screenshot of the nearest existing screen as the reference.
+- Start from scratch only when Byron explicitly says to.
 
 ## Git commits
 
