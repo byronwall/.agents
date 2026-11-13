@@ -41,9 +41,21 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 ## Truncation and disclosure
 
 - In lists, show the full text. Lists are for reading, not inline references.
-- Truncate only inline references, around 28–48 characters, and back them with a fast hover card (not a `title` attribute) that adds information beyond the name.
+- Truncate only inline references, around 28–48 characters, and back them with a hover card (not a `title` attribute) that adds information beyond the name.
 - Every truncation needs a way to see the full content.
 - Hover cards sit close to the trigger and above everything else. Remove hover cards that only repeat what is visible; Byron finds them annoying.
+
+## Entity hover cards
+
+Byron likes dense hover cards on entity links (a company, person, project, or task). The goal is to understand the entity without navigating to its page. Reference: the job-hunt company card on the posting header (Nov 2026), `src/components/CompanyHover.tsx` in `~/Projects/job-hunt`.
+
+- Add a hover card to most entity links whose page holds more than the name. A card that saves a page visit is better than a link alone.
+- Open after a slight delay, about 400–500ms, so a passing pointer does not open it. Open at once on keyboard focus.
+- Keep it open while the pointer is on the link or the card, with a short close delay (about 150ms) to cross the gap. Links inside the card must be clickable. Esc, blur, and click close it.
+- Make it dense. Pick the facts most likely to be useful in this context, not a copy of the page. For a company seen from a posting: fit and why, size, money, location, concerns, and the other postings at that company with the current one highlighted.
+- Use a compact layout: a header with logo, name, and status badges; a label/value grid with joined values (`Founded 2016 · San Francisco · 200–500 people`); clamped notes; a short ranked list with "+N more"; a footer link to the full page.
+- Render it in a portal with fixed position, so a scrolling pane cannot clip it. Flip it above the trigger when there is no room below. Keep it about 400–450px wide.
+- Read from data the page already has (the shared index). Do not fetch on hover when the data can come with the list.
 
 ## Hierarchy and placement
 
