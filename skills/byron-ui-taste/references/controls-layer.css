@@ -1,0 +1,306 @@
+/* Controls template: one token block and one state model.
+   Distilled from the job-hunt viewer (Nov 2026), where it replaced four stacked :root blocks
+   and 43 one-off hover/press/focus rules. Copy it, rename the classes to the app's own,
+   and keep the app's existing colors (organize them; don't rebrand).
+
+   Put the :root block at the TOP of the main stylesheet and the Controls section at the END,
+   so it wins over older rules. Then delete the old state rules it now owns. */
+
+:root {
+  /* Scales: raw values. Components never use these directly. */
+  --gray-0: #ffffff; --gray-25: #f8fafc; --gray-50: #f3f5f8; --gray-75: #f1f4f8; --gray-100: #e9edf2;
+  --gray-150: #e2e6ec; --gray-200: #d8dee7; --gray-250: #c7d0dc; --gray-300: #b4bcc8; --gray-400: #8a94a3;
+  --gray-600: #5a6577; --gray-900: #172030;
+  --blue-25: #f5f8fe; --blue-50: #eaf0fc; --blue-75: #e3eafb; --blue-100: #d8e3fa; --blue-200: #c9d6f5;
+  --blue-300: #a6bcef; --blue-500: #3e6ae0; --blue-600: #2f5bd3; --blue-700: #2850bd; --blue-800: #1f45ad; --blue-900: #1a3580;
+  --red-50: #f9e6e4; --red-100: #f4d6d3; --red-200: #efc9c5; --red-600: #c2413a; --red-700: #a3332d;
+
+  /* Semantic names: what components use */
+  --panel: var(--gray-0);
+  --text: var(--gray-900);
+  --muted: var(--gray-600);
+  --faint: var(--gray-400);
+  --line: var(--gray-150);
+  --line-strong: var(--gray-200);   /* control borders */
+  --line-hover: var(--gray-250);    /* field border on hover */
+  --hover: var(--gray-50);          /* row hover */
+  --press: var(--gray-100);         /* row press */
+  --accent: var(--blue-600);
+  --accent-hover: var(--blue-700);
+  --accent-press: var(--blue-800);
+  --accent-tint: var(--blue-50);           /* selected, quiet-button hover */
+  --accent-tint-hover: var(--blue-75);     /* selected + hover */
+  --accent-tint-press: var(--blue-100);    /* press */
+  --accent-line: var(--blue-200);
+  --bad: var(--red-600); --bad-tint: var(--red-50); --bad-line: var(--red-200); --bad-ink: var(--red-700);
+  --ring: rgb(15 23 42 / 0.08);
+  --lift-hover: rgb(255 255 255 / 0.62);   /* controls on a tinted sidebar lift to white */
+  --lift-press: rgb(255 255 255 / 0.95);
+  --veil-hover: rgb(23 32 48 / 0.045);     /* quiet neutral controls */
+  --veil-press: rgb(23 32 48 / 0.085);
+
+  /* Focus */
+  --focus: var(--blue-500);
+  --focus-width: 2px;
+  --focus-offset: 2px;
+  --focus-halo: 0 0 0 3px rgb(47 91 211 / 0.14);
+
+  /* Type */
+  --fs-2xs: 10px; --fs-xs: 11px; --fs-sm: 12px; --fs-md: 13px; --fs-lg: 15px; --fs-xl: 20px; --fs-2xl: 24px;
+  --fw-regular: 400; --fw-medium: 500; --fw-semibold: 600;
+
+  /* Space, size, radius */
+  --s0: 2px; --s1: 4px; --s2: 8px; --s3: 12px; --s4: 16px; --s5: 24px; --s6: 32px;
+  --ctl-xs: 22px; --ctl-sm: 26px; --ctl-md: 28px; --ctl-lg: 32px;
+  --ctl-icon: 24px;                 /* also the minimum hit target */
+  --r-xs: 4px; --r-sm: 5px; --r-md: 6px; --r-lg: 8px; --r-xl: 10px;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgb(15 23 42 / 0.06);
+  --shadow-field: inset 0 1px 1px rgb(15 23 42 / 0.03);
+
+  /* Motion */
+  --dur-instant: 80ms; --dur-fast: 120ms; --dur-base: 160ms; --dur-slow: 240ms; --dur-slower: 320ms;
+  --ease: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --press-scale: 0.97;
+  --press-scale-sm: 0.9;
+}
+
+/* ===== Controls =====
+   hover = one step stronger (pointer devices only) · press = two steps + scale, snaps in
+   selected = accent tint, no fade · focus = keyboard only · disabled = 45%, not-allowed
+   Selection never changes weight, border width, or padding: the control must not change size. */
+
+.btn, .text-btn, .icon-btn, .seg, .tab, .tag, .row, .field {
+  transition-property: background-color, border-color, color, box-shadow, opacity, transform;
+  transition-duration: var(--dur-fast);
+  transition-timing-function: var(--ease);
+  -webkit-tap-highlight-color: transparent;
+}
+:is(.btn, .text-btn, .icon-btn, .seg, .tag):active {
+  transition-duration: var(--dur-instant);
+}
+
+/* Focus: keyboard only. Outside ring on compact controls, inset on rows (scrollers clip outside rings). */
+:focus { outline: none; }
+:focus-visible {
+  outline: var(--focus-width) solid var(--focus);
+  outline-offset: var(--focus-offset);
+  border-radius: var(--r-xs);
+}
+:is(.row, .tab, .nav-item):focus-visible {
+  outline-offset: calc(-1 * var(--focus-width));
+}
+
+:is(button, .field):disabled, [aria-disabled="true"] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Bordered button */
+.btn {
+  height: var(--ctl-md);
+  padding: 0 var(--s3);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s1);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background: var(--panel);
+  color: var(--accent);
+  box-shadow: var(--shadow-1);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .btn:hover { background: var(--accent-tint); border-color: var(--accent-line); color: var(--accent-hover); }
+}
+.btn:active {
+  background: var(--accent-tint-press);
+  border-color: var(--blue-300);
+  color: var(--accent-press);
+  box-shadow: none;
+  transform: scale(var(--press-scale));
+}
+.btn.on { background: var(--accent-tint); border-color: var(--accent-line); box-shadow: none; } /* same weight as rest */
+
+.btn.primary {
+  color: #fff;
+  border-color: var(--blue-700);
+  background: linear-gradient(var(--blue-500), var(--blue-600));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.18), 0 1px 2px rgb(47 91 211 / 0.3);
+}
+@media (hover: hover) {
+  .btn.primary:hover { color: #fff; border-color: var(--blue-800); background: linear-gradient(var(--blue-600), var(--blue-700)); }
+}
+.btn.primary:active { color: #fff; background: var(--blue-800); box-shadow: inset 0 1px 2px rgb(10 20 60 / 0.3); }
+
+.btn.danger { color: var(--bad); }
+@media (hover: hover) {
+  .btn.danger:hover { background: var(--bad-tint); border-color: var(--bad-line); color: var(--bad-ink); }
+}
+.btn.danger:active { background: var(--red-100); color: var(--bad-ink); }
+.btn.danger:focus-visible { outline-color: var(--bad); }
+
+/* Children follow the control's state: key hints and icons use currentColor */
+.btn kbd {
+  background: transparent;
+  color: inherit;
+  border-color: color-mix(in srgb, currentColor 28%, transparent);
+}
+
+/* Quiet buttons: no fill at rest. 24px tall so they meet the hit target and center beside .btn. */
+.text-btn, .icon-btn, .tag {
+  border: 0;
+  background: transparent;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.text-btn { height: var(--ctl-icon); display: inline-flex; align-items: center; padding: 0 var(--s1); color: var(--accent); }
+.icon-btn { width: var(--ctl-icon); height: var(--ctl-icon); display: inline-grid; place-items: center; color: var(--muted); }
+.tag { min-height: var(--ctl-icon); color: var(--muted); font-weight: var(--fw-regular); }
+@media (hover: hover) {
+  .text-btn:hover, .icon-btn:hover { background: var(--accent-tint); color: var(--accent-hover); }
+  .tag:hover { background: var(--veil-hover); color: var(--text); }
+  .tag.on:hover { background: var(--accent-tint-hover); }
+}
+.text-btn:active { background: var(--accent-tint-press); transform: scale(var(--press-scale)); }
+.icon-btn:active { background: var(--accent-tint-press); transform: scale(var(--press-scale-sm)); }
+.tag:active { background: var(--veil-press); transform: scale(var(--press-scale)); }
+.tag.on { background: var(--accent-tint); color: var(--accent); }
+
+/* Segmented control: the well is exactly one control height (2px inset + 24px segments). */
+.seg-group {
+  display: inline-flex;
+  align-items: center;
+  height: var(--ctl-md);
+  padding: 2px;
+  gap: 2px;
+  border-radius: var(--r-lg);
+  background: var(--gray-75);
+  box-shadow: inset 0 0 0 1px var(--line);
+}
+.seg-group .seg {
+  height: var(--ctl-icon);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 var(--s3);
+  border: 0;
+  border-radius: var(--r-md);
+  background: transparent;
+  color: var(--muted);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .seg-group .seg:hover { background: var(--lift-hover); color: var(--text); }
+}
+.seg-group .seg:active { background: var(--lift-press); }
+.seg-group .seg.on { background: var(--panel); color: var(--text); box-shadow: 0 0 0 1px var(--ring), var(--shadow-1); }
+
+/* Tabs: underline marks the current tab; hover previews it in gray. Same weight in every state. */
+.tab {
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  font-weight: var(--fw-medium);
+  cursor: pointer;
+}
+@media (hover: hover) {
+  .tab:hover { color: var(--text); border-bottom-color: var(--line-hover); }
+}
+.tab:active { background: var(--veil-hover); }
+.tab.on, .tab.on:hover { color: var(--text); border-bottom-color: var(--accent); }
+
+/* Rows: lists and table rows that select an item. Selection snaps; only hover fades. */
+.row { cursor: pointer; }
+@media (hover: hover) {
+  .row:hover { background: var(--hover); }
+  .row.selected:hover { background: var(--accent-tint-hover); }
+}
+.row:active { background: var(--press); transition-duration: var(--dur-instant); }
+.row.selected { background: var(--accent-tint); transition-duration: 0ms; }
+.row.selected:active { background: var(--accent-tint-press); }
+/* Rows on a tinted sidebar lift to white */
+@media (hover: hover) {
+  .sidebar .row:hover { background: var(--lift-hover); }
+}
+.sidebar .row.selected { background: var(--panel); box-shadow: 0 0 0 1px var(--ring), var(--shadow-1); }
+
+/* Fields: hover darkens the border; focus is border + halo, not an outline. */
+.field {
+  height: var(--ctl-md);
+  padding: 0 var(--s2);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--r-md);
+  background-color: var(--panel);
+  box-shadow: var(--shadow-field);
+}
+@media (hover: hover) {
+  .field:hover { border-color: var(--line-hover); }
+}
+.field:focus, .field:focus-within {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: var(--focus-halo);
+}
+::placeholder { color: var(--faint); opacity: 1; }
+select.field {
+  appearance: none;
+  padding-right: var(--s5);
+  cursor: pointer;
+  background: var(--panel) no-repeat right var(--s2) center
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%235a6577' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+}
+
+/* Checkbox in the system; the check pops in */
+input[type="checkbox"] {
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  display: inline-grid;
+  place-items: center;
+  position: relative;
+  border: 1.5px solid var(--line-hover);
+  border-radius: var(--r-xs);
+  background: var(--panel);
+  cursor: pointer;
+}
+input[type="checkbox"]::before { content: ""; position: absolute; inset: -4px; } /* 24px hit area */
+input[type="checkbox"]::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  clip-path: polygon(14% 52%, 0 66%, 38% 100%, 100% 22%, 86% 8%, 38% 72%);
+  transform: scale(0);
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+@media (hover: hover) {
+  input[type="checkbox"]:hover { border-color: var(--accent); }
+}
+input[type="checkbox"]:active { transform: scale(var(--press-scale-sm)); }
+input[type="checkbox"]:checked { background: var(--accent); border-color: var(--accent); }
+input[type="checkbox"]:checked::after { transform: scale(1); }
+
+/* Switch: never display:none the input, or the keyboard can't reach it */
+.switch input { position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }
+.switch input:focus-visible + .track { outline: var(--focus-width) solid var(--focus); outline-offset: var(--focus-offset); }
+
+/* Touch screens have no hover: show anything that hover reveals */
+@media (hover: none) {
+  .reveal-on-hover { opacity: 1; }
+}
+
+/* Reduced motion: keep color feedback, drop movement */
+@media (prefers-reduced-motion: reduce) {
+  :is(.btn, .text-btn, .icon-btn, .seg, .tag, input[type="checkbox"]):active { transform: none; }
+  input[type="checkbox"]::after { transition-duration: 0ms; }
+}
