@@ -72,6 +72,7 @@ These rules came from the job-hunt fit breakdown (Nov 2026). Byron called the re
 - Every interactive element has a visible hover and pressed state (see "Controls and states"). Use `emil-design-eng` motion: short color fades of 120–160ms, no `transition: all`, respect reduced motion.
 - A dialog containing typed text does not close on a backdrop click; require Cancel. An empty dialog may close on any outside click.
 - A dialog or menu with a text filter focuses it on open, and only Esc (or ×) closes it. No letter key closes or toggles it while the filter has focus, including the key that opened it; every letter must be searchable.
+- An investigatory click never navigates. Clicking a row, step, or reference to find out what it is opens a modal, popover, or peek over the current page, with the selection in the URL; leaving the page takes an explicit "Open" action. ("An investigatory click is jumping you around, which is not what we want", Nov 2026.)
 - Text areas auto-size so the full contents are visible.
 - Graphs get an expand control that opens a full-viewport view with drag-to-pan and wheel zoom. Zoom keeps the focal point under the cursor stable, and the view opens fitted to the whole image.
 - Save actions clear the previous status or error immediately so stale messages never imply progress.
