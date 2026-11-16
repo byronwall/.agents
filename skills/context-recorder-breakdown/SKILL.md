@@ -55,6 +55,8 @@ For sessions over ~15 minutes, split the ledger's blocks among subagents. Give e
 
   Embed each image inline under its item, with the timestamp above it. For motion bugs, use a `frame --burst` before/after pair, not a video attachment. For Jira image upload, see the memory note "Jira image embedding". File only when Byron says so.
 
+  **Don't push a whole walkthrough into Jira.** For a broad UI/UX review, the exhaustive list stays outside Jira, as one shared document or Slack thread the owner pulls from, and Jira gets only a few well-scoped issues for the items that need tracking. Filing the November 2026 Full View walkthrough's 54 items as Jira work for Jeremy (RAI-55515) created friction; propose the short list to Byron before drafting any issue.
+
 **Where it goes:** the owning task's `tasks/TASK-NNNN-assets/` in daily-planning; create the task first if needed. Put images in a dated subfolder (`--assets`), keep the filled ledger next to them as the evidence record, and link the session folder, `session.md` and `viewer.html` by absolute path. The cloud copy's link is `url` in `exports/cloud.json`.
 
 ## Pitfalls
