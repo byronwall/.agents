@@ -20,6 +20,7 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 - Pills only where they carry state, and sparingly. A screen full of pills is "a mottled mess".
 - Prefer an icon or color on a consistent left rail for status over a text pill that pushes titles around.
 - Code blocks are light, not black, and wrap by default.
+- Never dump raw text into an unstyled monospace `<pre>` box. Prose such as an agent prompt, a message or a note renders as Markdown on its own surface (a pale tint or a raised panel), so it reads as something special. Real code (SQL, a rule, a command) gets a highlighted code block. ("Just dumping raw text monospaced… that's pretty much never good", Nov 2026.)
 - Fills are soft and low-chroma: panel, row, node and group backgrounds use pale tints, never saturated color. Save saturated color for data marks (a metric's value, an edge, a status dot). Text on a tint must read easily; blue text on a blue fill is a common miss. ("Background colors are too strong and saturated"; "too saturated… almost look like nodes".)
 
 ## Layout stability
