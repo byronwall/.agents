@@ -110,6 +110,23 @@ These rules came from the job-hunt controls pass (Nov 2026). Byron called the re
 - Group labels must not collide with group borders.
 - Titles, subtitles, labels and notes in a diagram meant for others are Byron's prose: run them through `write-byron-voice` before rendering.
 
+### Diagram copy
+
+Byron rewrites generated diagram copy on sight ("that subtitle is just slop"; "no meta commentary or the generation instructions leaking through"). Before the first show, reread the title, subtitle, group titles, legend and box labels as if a teammate wrote them for another teammate:
+
+- **The title names the thing; the subtitle says what you found.** It is the sentence you'd say out loud if someone asked "so what?", not a description of the picture.
+- **Never describe the drawing.** No "this diagram shows", no "Diagram 07 shows how they connect", no layout tour ("the happy path first, then the edge cases", "what works up top, where it breaks below"). The layout is visible; say what it means.
+- **Never echo the brief.** Words from your instructions don't belong on the page: "takeaway", "at a glance", "overview of", "in Byron's voice", "plain language", "one idea". Neither do task or step IDs on their own, like a title ending "(TASK-0082 W14)".
+- **No filler or hedges:** key insights, comprehensive, seamless, robust, leverage, holistic, streamline, crucial; potentially, arguably, essentially, basically.
+- **Use his words for the thing.** "Who moves a bug along", not "Every handoff is a gate a human or agent can pass". "Scoring a PR", not "Score a change so reviewers know their posture".
+
+Real rewrites:
+
+- Subtitle "The happy path first, then the three edge cases that break it" became "Models deployed before Sep 15 have no identity marker, and teardown refuses them".
+- Title "Every handoff is a gate a human or agent can pass" with subtitle "One process, run by people today and agents more over time" became "Who moves a bug along" with "A person or an agent can do each step, and any handoff can stop for a person".
+
+In daily-planning, `npm run lint -- <file.draft>` rejects the worst of these (layout narration, the drawing talking about itself, brief leftovers, filler, hedges) in titles, subtitles, group titles and legends. Passing lint is the floor, not the voice pass.
+
 ## Working method
 
 - For open-ended "make it better" requests, use `consider-contrast`: sketch 5–10 directions, then combine the best into one.
