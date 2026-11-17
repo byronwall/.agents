@@ -532,6 +532,37 @@ def context_stats(path):
             "fresh_k": fresh // 1000, "written_k": written // 1000, "out_k": out // 1000, "eq_m": round(eq / 1e6, 2)}
 
 
+def model_stats(path):
+    """Per-model calls and cost-eq (base-input units) for one transcript; main thread and sidechains alike."""
+    by, seen = {}, set()
+    with open(path, errors="replace") as f:
+        for line in f:
+            try:
+                rec = json.loads(line)
+            except ValueError:
+                continue
+            m = rec.get("message") or {}
+            u = m.get("usage") if rec.get("type") == "assistant" else None
+            if not u or m.get("id") in seen or not m.get("model") or m.get("model") == "<synthetic>":
+                continue
+            seen.add(m.get("id"))
+            cc = u.get("cache_creation") or {}
+            w1h = cc.get("ephemeral_1h_input_tokens", 0) if cc else 0
+            w5m = u.get("cache_creation_input_tokens", 0) - w1h
+            eq = (u.get("input_tokens", 0) + 2 * w1h + 1.25 * w5m
+                  + 0.1 * u.get("cache_read_input_tokens", 0) + 5 * u.get("output_tokens", 0))
+            b = by.setdefault(m["model"], [0, 0.0, 0])
+            b[0] += 1; b[1] += eq; b[2] += u.get("output_tokens", 0)
+    return by
+
+
+def model_family(model):
+    for fam in ("opus", "sonnet", "haiku", "fable"):
+        if fam in model:
+            return fam
+    return model
+
+
 def scan(rows, root, section, save):
     """Deterministic pass over the whole window: failures, denials, slow calls, user messages."""
     cs = [collect(Path(row["path"])) for row in rows]
@@ -578,6 +609,26 @@ def scan(rows, root, section, save):
             print(f"S{i:<3} {row['user_msgs']:>3}msg {k['calls']:>4}calls first {k['first_k']:>4}k peak {k['peak_k']:>4}k "
                   f"total {k['total_m']:>6}M | uncached {k['fresh_k']:>4}k cache-write {k['written_k']:>5}k out {k['out_k']:>4}k | cost-eq {k['eq_m']:>5}M "
                   f"compact {k['compactions']}  {row['first'][:50]}")
+    if want("models"):
+        print("\n## Models per session (cost-eq in M base-input tokens; same weights for every model, so compare\n"
+              "## shares, then apply price ratios: Sonnet is about 0.6x Opus, Haiku about 0.2x)")
+        tot = {}
+        for i, (row, c) in enumerate(zip(rows, cs), 1):
+            parts = [("main", model_stats(Path(row["path"])))]
+            parts += [(f"a{j}", model_stats(sp)) for j, sp in enumerate(subagent_files(Path(row["path"])), 1)]
+            line = []
+            for who, by in parts:
+                for model, (n, eq, out) in by.items():
+                    fam = model_family(model)
+                    kind = "sub" if who != "main" else ("spawned" if row["first"].startswith("[brief") else
+                                                         "scheduled" if "scheduled-task" in row["first"] else "main")
+                    t = tot.setdefault((kind, fam), [0, 0.0, 0]); t[0] += n; t[1] += eq; t[2] += 1
+                    if who == "main" or eq > 2e5:
+                        line.append(f"{who}:{fam} {n}c {eq/1e6:.1f}M")
+            print(f"S{i:<3} {row['user_msgs']:>3}msg  {' | '.join(line)[:120]}\n      {row['first'][:110]}")
+        print("\n## Model rollup by thread kind (calls, cost-eq M, transcripts)")
+        for (kind, fam), (n, eq, k) in sorted(tot.items(), key=lambda x: -x[1][1]):
+            print(f"   {kind:10} {fam:8} {n:6}c {eq/1e6:8.1f}M  {k:4} transcripts")
     if want("users"):
         users = sorted((ts, f"S{i} ", t) for i, c in enumerate(cs, 1) for ts, t in c["users"])
         cap = 1500 if section == "users" else 300
@@ -654,7 +705,7 @@ def main():
     ap.add_argument("--limit", type=int, default=40)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--scan", action="store_true", help="aggregate report over the listed sessions")
-    ap.add_argument("--section", choices=["sessions", "trend", "fails", "denials", "slow", "users", "context"],
+    ap.add_argument("--section", choices=["sessions", "trend", "fails", "denials", "slow", "users", "context", "models"],
                     help="with --scan: print one section; 'users' prints full message text")
     ap.add_argument("--last-retro", action="store_true", help="previous retro's findings and their landing status")
     ap.add_argument("--ledger", action="store_true", help="other repos' findings checked against this repo")
