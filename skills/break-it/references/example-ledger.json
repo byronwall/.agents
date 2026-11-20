@@ -1,0 +1,27 @@
+{
+  "target": "CSV import retries (illustrative example)",
+  "candidates": [
+    {
+      "id": "C1",
+      "title": "A retried import creates duplicate rows",
+      "who": "An editor importing a CSV",
+      "holes": [
+        {
+          "layer": "Retry",
+          "condition": "An import is retried",
+          "freq": "occasional"
+        },
+        {
+          "layer": "Storage",
+          "condition": "Both writes append rows",
+          "freq": "routine"
+        }
+      ],
+      "harm": "wrong",
+      "observe": "Count stored rows after importing the same file twice",
+      "status": "untested",
+      "note": "Illustrative scenario. No probe has run.",
+      "subtitle": "A retry can store the same rows twice"
+    }
+  ]
+}

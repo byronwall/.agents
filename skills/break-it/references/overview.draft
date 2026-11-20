@@ -1,0 +1,47 @@
+diagram "How a break-it pass runs" version=1
+subtitle "Only candidates close to real harm get tested"
+
+group inspect "1 · Inspect the boundary" color=sky frame=soft
+node io "Inputs and outputs\nwalk out from the diff to real entry points" in=inspect
+node assume "Implicit assumptions\norder, single writer, restarts, a second tab" in=inspect
+node seams "Fault seams\nand where each failure would show" in=inspect
+
+group triage "2 · Swiss-cheese triage (cheese.py)" color=violet frame=soft
+node holes "Holes that must line up\neach banded always … contrived" in=triage
+node harm "Harm\ncosmetic … wrong, exposure, loss" in=triage
+
+node test "Test it" color=amber
+node note "Note it: accepted risk" color=slate
+node skip "Skip it: one line" color=slate
+
+group run "3–4 · Test and verify" color=amber frame=soft
+node probe "Probe at the real boundary\nevidence kept" in=run
+node control "Control: the probe can fail" in=run
+node base "Rerun on base\nnew or pre-existing" in=run
+
+group out "5–6 · Explain and summarize" color=mint frame=soft
+node diag "Boundary diagram\none cheese diagram per break" in=out
+node report "Report: verdict, results table,\naccepted risk, test gaps" in=out
+
+edge e1 io -> holes
+edge e2 assume -> holes
+edge e3 seams -> holes
+edge e4 holes -> harm
+edge e5 harm -> test "close to harm"
+edge e6 harm -> note "further, or contrived exposure"
+edge e7 harm -> skip "far, or contrived"
+edge e8 test -> probe
+edge e9 probe -> control
+edge e10 control -> base
+edge e11 base -> diag
+edge e12 diag -> report
+edge e13 note -> report kind=async
+
+legend sky "Inspection"
+legend violet "Triage by a fixed rule"
+legend amber "Worth testing"
+legend mint "What Byron reads"
+legend slate "Recorded, not tested"
+legend line dashed "Listed in the report without a test"
+
+layout root flow gap=48 fit=slide

@@ -1,0 +1,11 @@
+diagram "CSV import retries" version=1
+subtitle "A retry sends the same file to the importer twice"
+node editor "Editor" color=sky
+node importer "CSV importer" color=amber
+node rows "Stored rows" color=slate
+edge e1 editor -> importer "seam: retry"
+edge e2 importer -> rows "append"
+legend sky "Caller"
+legend amber "Changed code"
+legend slate "Observable output"
+layout root flow gap=48 fit=slide

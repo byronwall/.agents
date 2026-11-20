@@ -1,0 +1,18 @@
+diagram "C1 · A retried import creates duplicate rows" version=1
+subtitle "A retry can store the same rows twice"
+
+node hazard "Starts with\nAn editor importing a CSV" color=slate
+group layer1 "Retry" color=slate
+node hole1 "An import is retried\nopen: occasional" in=layer1 color=amber
+edge e1 hazard -> hole1
+group layer2 "Storage" color=slate
+node hole2 "Both writes append rows\nopen: routine" in=layer2 color=amber
+edge e2 hole1 -> hole2
+node harm "Count stored rows after importing the same file twice\nharm: wrong" color=red
+edge e_harm hole2 -> harm
+
+legend amber "Hole that is often open"
+legend red "What the user sees"
+legend slate "Who starts it, and each defense"
+
+layout root flow gap=40 fit=slide
