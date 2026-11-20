@@ -140,6 +140,33 @@ Real rewrites:
 
 Where a repo has a diagram copy lint (`npm run lint -- <file.draft>` in some planning repos), it rejects the worst of these (layout narration, the drawing talking about itself, brief leftovers, filler, hedges) in titles, subtitles, group titles and legends. Passing lint is the floor, not the voice pass.
 
+## Polish pass (AI-look tells)
+
+Run this last on any screen an agent built or restyled. A blind eval in 2026-11 (planning TASK-0037) restyled five AI-generated screens with five skills. This skill alone beat `unslop`, `impeccable`, `clean-copy` and no skill. Only `make-interfaces-feel-better` edged it, through small detail polish. The other skills lost in the same ways, so check those first.
+
+Never do these while polishing:
+
+- Hide content. Do not collapse "Done" rows, tips or descriptions out of a view that claims to show everything ("All 14").
+- Delete real copy because it looks wordy. A welcome line, a row description and a hint that names a consequence all stay. Cut only a caption that restates its label.
+- Break mobile. At 390px nothing scrolls sideways, and save buttons, toggles and table actions stay reachable.
+- Change the product's words: the headline, the title or the punctuation.
+- Add sections, features, stats or claims the screen did not have.
+
+Remove these tells (adapted from `unslop` by Damir Sokolovsky, heydamir.design/unslop, CC BY 4.0):
+
+- Decoration with no job: colored dots on KPI labels, tinted change pills on every number, glows, gradient text, gradient blobs, filled sparklines with end dots.
+- Shouting labels: uppercase tracked eyebrows over every section, a "New ·" or "New ✨" badge, emoji in labels.
+- Template sections: a fake logo wall, "Loved by 48,000+" claims, three numbered step cards, an italic accent word in the hero.
+- Pulsing, floating or shimmering elements that show no state.
+
+Add these details (adapted from `make-interfaces-feel-better` by Jakub Krehel, MIT):
+
+- `font-variant-numeric: tabular-nums` on numbers that change or line up in columns.
+- `text-wrap: balance` on headings and `text-wrap: pretty` on body text.
+- Concentric radius: outer radius = inner radius + padding.
+- Name the properties in a transition. Never `transition: all`.
+- Icons beside text match the text's stroke weight, and they use `currentColor` for states.
+
 ## Working method
 
 - For open-ended "make it better" requests, use `consider-contrast`: sketch 5–10 directions, then combine the best into one.

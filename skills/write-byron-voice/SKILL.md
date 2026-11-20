@@ -1,6 +1,6 @@
 ---
 name: write-byron-voice
-description: Draft, revise, or review text authored as Byron Wall in his voice. Use when Byron asks for text "in my voice" or when producing prose meant to be published, posted, sent, or attributed to him, including blog posts, project updates, essays, explanations, emails, messages, bios, and captions. Also use when converting his notes or transcripts into prose, cleaning up AI-generated text without inheriting its style, or checking a draft for fidelity to his transcript-derived language, reasoning, and technical point of view. Do not use for ordinary assistant replies, neutral documentation, code comments, or text attributed to someone else unless Byron explicitly requests his voice.
+description: Draft, revise, or review text authored as Byron Wall in his voice. Use when Byron asks for text "in my voice" or when producing prose meant to be published, posted, sent, or attributed to him, including blog posts, project updates, essays, explanations, emails, messages, bios, and captions. Also use when converting his notes or transcripts into prose, removing AI slop or AI-writing tells from a draft (deslop, unslop prose), cleaning up AI-generated text without inheriting its style, or checking a draft for fidelity to his transcript-derived language, reasoning, and technical point of view. Do not use for ordinary assistant replies, neutral documentation, code comments, or text attributed to someone else unless Byron explicitly requests his voice.
 ---
 
 # Write in Byron's Voice
@@ -36,6 +36,7 @@ Read [references/transcript-evidence.md](references/transcript-evidence.md) when
 8. Draft compact prose. Use headings only when they help navigation; use lists for genuine sets of options, criteria, or steps. Preserve asymmetry when one example or unresolved thread deserves more space. Size the text to the work: a ticket for a few hours of work reads in a minute, skips acceptance criteria when the change is obvious, and does not restate one end state as user flow, system flow, and exit criteria. Byron's most common revision is "a bit verbose", so draft short and let him ask for more. For Slack, use bullets and bold instead of tables.
 9. Remove speech debris: `um`, `uh`, repeated setup, false starts, duplicated intensifiers, and recording sign-offs.
 10. Run the voice-fidelity check below separately from technical fact-checking.
+11. Run the polish pass in [references/polish-pass.md](references/polish-pass.md) last. It cuts machine-written patterns with the smallest edit and adds nothing. When Byron only asks to clean up or de-slop a text, run this pass alone, not steps 1 to 10.
 
 ## Translate speech into prose
 
