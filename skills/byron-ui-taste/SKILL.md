@@ -82,6 +82,7 @@ These rules came from the job-hunt fit breakdown (Nov 2026). Byron called the re
 
 ## Interaction
 
+- Never use `window.alert`, `window.confirm`, or `window.prompt`. Ask for input (a reason, a note, a name) in a popover anchored to the control that started the action, with an auto-sized text area, Enter to submit, and Esc or Cancel to back out. Confirm a destructive action in that popover or with an undo. Show an error as an inline message or a toast. ("Very gross … just terrible", Nov 2026, about a `prompt` on Shortlist.)
 - Every interactive element has a visible hover and pressed state (see "Controls and states"). Use `emil-design-eng` motion: short color fades of 120–160ms, no `transition: all`, respect reduced motion.
 - A dialog containing typed text does not close on a backdrop click; require Cancel. An empty dialog may close on any outside click.
 - A dialog or menu with a text filter focuses it on open, and only Esc (or ×) closes it. No letter key closes or toggles it while the filter has focus, including the key that opened it; every letter must be searchable.
