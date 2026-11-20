@@ -1,6 +1,6 @@
 ---
 name: byron-ui-taste
-description: Byron Wall's recurring UI and diagram preferences — density, borders, layout stability, links, truncation, hierarchy, interaction, control states and design tokens, and diagram layout. Use before designing, restyling, "punching up", or reviewing any interface or technical diagram for Byron (the daily-planning viewer, Modeler/Rel app UI, dialogs, dashboards), and compose it with `impeccable`, `high-quality-application-ui-design`, and `emil-design-eng`. These are corrections Byron has given repeatedly; apply them by default instead of waiting for him to ask again.
+description: Byron Wall's recurring UI and diagram preferences — density, borders, layout stability, links, truncation, hierarchy, interaction, control states and design tokens, and diagram layout. Use before designing, restyling, "punching up", or reviewing any interface or technical diagram for Byron (planning viewers, data apps, dialogs, dashboards), and compose it with `impeccable`, `high-quality-application-ui-design`, and `emil-design-eng`. These are corrections Byron has given repeatedly; apply them by default instead of waiting for him to ask again.
 ---
 
 # Byron UI Taste
