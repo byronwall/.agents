@@ -2,7 +2,7 @@
 
 ## Prompt
 
-> We are moving a Python service from Railway to AWS. It currently reads TOML or environment variables and can persist runtime changes back to Railway. Implement SSM Parameter Store and Secrets Manager so startup and runtime writes survive restart. Produce a shape brief and implementation plan.
+> We are moving a Python service from its current host to AWS. It currently reads TOML or environment variables and can persist runtime changes back to the current host. Implement SSM Parameter Store and Secrets Manager so startup and runtime writes survive restart. Produce a shape brief and implementation plan.
 
 ## Must appear in the shape
 

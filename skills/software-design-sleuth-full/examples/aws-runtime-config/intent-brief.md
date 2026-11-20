@@ -10,7 +10,7 @@ last_updated: "2026-08-11"
 
 ## My read
 
-The application is moving from Railway to AWS and needs a durable replacement for its current configuration workflow. Today it can start from TOML or environment variables, accept configuration changes while running, and write those changes back to Railway so a restart does not restore stale values. The new system must preserve that behavior while using AWS-managed storage—most likely Systems Manager Parameter Store for ordinary settings and Secrets Manager for credentials or other sensitive values.
+The application is moving from its current host to AWS and needs a durable replacement for its current configuration workflow. Today it can start from TOML or environment variables, accept configuration changes while running, and write those changes back to the current host so a restart does not restore stale values. The new system must preserve that behavior while using AWS-managed storage—most likely Systems Manager Parameter Store for ordinary settings and Secrets Manager for credentials or other sensitive values.
 
 The important outcome is not simply “call two AWS SDKs.” The application needs one coherent configuration lifecycle: load a valid snapshot at startup, distinguish secret from non-secret values, apply an authorized runtime update, persist it, survive restart, and fail in an understandable way. Developers also need to reproduce success and failure locally. A deployment-only feedback loop would make the integration slow to debug and would make permission, timeout, missing-key, and partial-write behavior difficult to exercise deliberately.
 
@@ -71,12 +71,12 @@ A failed read or write should produce a clear diagnostic and a defined fallback.
 ## Current reality that matters
 
 - Configuration already enters through TOML and environment variables.
-- The current Railway persistence hook is platform-specific and should become one adapter rather than define the new domain model.
+- The current host's persistence hook is platform-specific and should become one adapter rather than define the new domain model.
 - The highest-risk unknowns are AWS semantics, permissions, and transition behavior—not parsing configuration from scratch.
 
 ## What still needs your input
 
-- Is preserving the old Railway/TOML path during rollout a requirement, or may the first AWS deployment cut over completely?
+- Is preserving the old host/TOML path during rollout a requirement, or may the first AWS deployment cut over completely?
 - Can more than one actor update configuration concurrently, or is there one authoritative writer?
 
 ## Next step after confirmation

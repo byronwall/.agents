@@ -2,7 +2,7 @@
 
 ## `aws-runtime-config/`
 
-A complete `intent → brainstorm → shape → plan` example for a Python application's move from Railway-managed environment variables to AWS Systems Manager Parameter Store and Secrets Manager.
+A complete `intent → brainstorm → shape → plan` example for a Python application's move from host-managed environment variables to AWS Systems Manager Parameter Store and Secrets Manager.
 
 It demonstrates the behavior this release is intended to add:
 

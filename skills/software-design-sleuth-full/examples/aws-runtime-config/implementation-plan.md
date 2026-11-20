@@ -182,7 +182,7 @@ Only after the representative path is stable should the application broaden fiel
   - Add bounded retries, timeout metrics, update success/failure counts, and revision-age diagnostics.
   - Test fallback or fail-closed behavior explicitly; do not infer it from code review.
 - **Change — Remove temporary compatibility only after evidence**
-  - Confirm all intended environments use the AWS source and no runtime path still writes through Railway.
+  - Confirm all intended environments use the AWS source and no runtime path still writes through the old host.
   - Remove the old adapter in a separate cleanup change after rollback appetite expires.
   - Preserve import/export or recovery tooling if it remains operationally valuable.
 

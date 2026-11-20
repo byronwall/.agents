@@ -16,7 +16,7 @@ Expected behavior:
 
 ## 2. AWS runtime configuration — full pipeline
 
-> The application currently loads TOML and environment variables and writes runtime changes back to Railway. We are moving to AWS and expect to use SSM Parameter Store and Secrets Manager. Run the full workflow through implementation planning. The result must be practical to develop and test locally.
+> The application currently loads TOML and environment variables and writes runtime changes back to the current host. We are moving to AWS and expect to use SSM Parameter Store and Secrets Manager. Run the full workflow through implementation planning. The result must be practical to develop and test locally.
 
 Expected behavior:
 

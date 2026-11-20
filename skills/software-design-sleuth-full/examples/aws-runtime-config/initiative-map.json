@@ -6,7 +6,7 @@
     "scale": "capability",
     "current_phase": "plan",
     "last_updated": "2026-08-11",
-    "summary": "Preserve startup and runtime configuration persistence while moving from Railway to AWS, with a fast local loop and a reversible provider integration.",
+    "summary": "Preserve startup and runtime configuration persistence while moving from its current host to AWS, with a fast local loop and a reversible provider integration.",
     "status": "planned",
     "next_action": "Start the first proof when implementation is requested"
   },
@@ -37,7 +37,7 @@
       "id": "SRC-001",
       "type": "direct-user-input",
       "location": "migration transcript",
-      "anchor": "section describing TOML/environment startup, Railway persistence, and AWS target",
+      "anchor": "section describing TOML/environment startup, current-host persistence, and AWS target",
       "authority": "direct current intent",
       "supports": [
         "INT-001",
@@ -135,7 +135,7 @@
       {
         "id": "REAL-002",
         "type": "current-repository-reality",
-        "statement": "The current runtime persistence hook is Railway-specific.",
+        "statement": "The current runtime persistence hook is specific to the current host.",
         "commitment": "derived",
         "importance": "supporting",
         "status": "active",
@@ -212,7 +212,7 @@
   "shape": {
     "status": "current",
     "appetite": "Bounded integration capability; one representative ordinary value and one secret value before broader migration.",
-    "problem": "Preserve a coherent startup and runtime configuration lifecycle after moving from Railway to AWS.",
+    "problem": "Preserve a coherent startup and runtime configuration lifecycle after moving from its current host to AWS.",
     "recommended_shape": {
       "summary": "Application-owned coordinator over narrow parameter and secret ports, with deterministic fakes, LocalStack adapter contracts, a real AWS sandbox smoke, and reversible source selection.",
       "selected_option": "OPT-007",
@@ -230,7 +230,7 @@
       "Add value-safe diagnostics with the first real adapter."
     ],
     "first_proof": {
-      "question": "Can the application update and recover one coherent configuration revision without Railway or AWS?",
+      "question": "Can the application update and recover one coherent configuration revision without the current host or AWS?",
       "artifact": "Focused provider-free lifecycle harness and deterministic failure tests.",
       "decision_rule": "Proceed when no partial revision becomes active and the suite runs locally without network or deployment."
     },
@@ -255,7 +255,7 @@
       "subsystems": [
         "existing configuration parser and validator",
         "runtime configuration mutation path",
-        "Railway persistence adapter",
+        "Current-host persistence adapter",
         "deployment configuration",
         "test harness and observability"
       ],

@@ -8,7 +8,7 @@ last_updated: "2026-10-04"
 
 # Runtime configuration — what we are adding
 
-**Outcome:** Startup and runtime configuration changes survive restart after the move from Railway to AWS.
+**Outcome:** Startup and runtime configuration changes survive restart after the move from its current host to AWS.
 
 **Primary flow:** Load → validate → change → persist → activate → restart with the saved values.
 
