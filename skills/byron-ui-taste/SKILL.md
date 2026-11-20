@@ -47,12 +47,12 @@ Byron reviews UI on a large monitor and works through it quickly. He wants calm,
 
 ## Entity hover cards
 
-Byron likes dense hover cards on entity links (a company, person, project, or task). The goal is to understand the entity without navigating to its page. Reference: the job-hunt company card on the posting header (Nov 2026), `src/components/CompanyHover.tsx` in `~/Projects/job-hunt`.
+Byron likes dense hover cards on entity links (a company, person, project, or task). The goal is to understand the entity without navigating to its page.
 
 - Add a hover card to most entity links whose page holds more than the name. A card that saves a page visit is better than a link alone.
 - Open after a slight delay, about 400–500ms, so a passing pointer does not open it. Open at once on keyboard focus.
 - Keep it open while the pointer is on the link or the card, with a short close delay (about 150ms) to cross the gap. Links inside the card must be clickable. Esc, blur, and click close it.
-- Make it dense. Pick the facts most likely to be useful in this context, not a copy of the page. For a company seen from a posting: fit and why, size, money, location, concerns, and the other postings at that company with the current one highlighted.
+- Make it dense. Pick the facts most likely to be useful in this context, not a copy of the page. For a company seen from one of its products: what it does, size, location, concerns, and its other products with the current one highlighted.
 - Use a compact layout: a header with logo, name, and status badges; a label/value grid with joined values (`Founded 2016 · San Francisco · 200–500 people`); clamped notes; a short ranked list with "+N more"; a footer link to the full page.
 - Render it in a portal with fixed position, so a scrolling pane cannot clip it. Flip it above the trigger when there is no room below. Keep it about 400–450px wide.
 - Read from data the page already has (the shared index). Do not fetch on hover when the data can come with the list.
@@ -70,7 +70,7 @@ Byron likes dense hover cards on entity links (a company, person, project, or ta
 
 ## Signal rows and drill-down
 
-These rules came from the job-hunt fit breakdown (Nov 2026). Byron called the result "awesome" and "really nice". Snapshots: [rows at rest](references/snapshots/fit-breakdown-rows.png), [the Jev popover](references/snapshots/fit-breakdown-jev-popover.png), and [the requirements popover](references/snapshots/fit-breakdown-requirements-popover.png). The snapshot text is a neutral stand-in (a vendor review); the layout, marks, and colors are the real UI.
+Byron called the result of these rules "awesome" and "really nice" (Nov 2026). Snapshots of a vendor review: [rows at rest](references/snapshots/signal-rows.png), [the model popover](references/snapshots/signal-rows-model-popover.png), and [the requirements popover](references/snapshots/signal-rows-requirements-popover.png).
 
 - One row per signal: a label column, a small fixed-width mark (bar, scale, or pips), and one line of text. Related signals share one grid and one row style, with no dividers or cards between them.
 - Show the summary; put the full detail one click away. The whole row is the button. It opens a popover anchored under the row, over the content below, so nothing shifts. Only one popover is open at a time. Esc or an outside click closes it. A small chevron at the row's right edge turns when open; the open row keeps its pressed tint.
@@ -82,7 +82,7 @@ These rules came from the job-hunt fit breakdown (Nov 2026). Byron called the re
 
 ## Interaction
 
-- Never use `window.alert`, `window.confirm`, or `window.prompt`. Ask for input (a reason, a note, a name) in a popover anchored to the control that started the action, with an auto-sized text area, Enter to submit, and Esc or Cancel to back out. Confirm a destructive action in that popover or with an undo. Show an error as an inline message or a toast. ("Very gross … just terrible", Nov 2026, about a `prompt` on Shortlist.)
+- Never use `window.alert`, `window.confirm`, or `window.prompt`. Ask for input (a reason, a note, a name) in a popover anchored to the control that started the action, with an auto-sized text area, Enter to submit, and Esc or Cancel to back out. Confirm a destructive action in that popover or with an undo. Show an error as an inline message or a toast. ("Very gross … just terrible", Nov 2026, about a `prompt` dialog.)
 - Every interactive element has a visible hover and pressed state (see "Controls and states"). Use `emil-design-eng` motion: short color fades of 120–160ms, no `transition: all`, respect reduced motion.
 - A dialog containing typed text does not close on a backdrop click; require Cancel. An empty dialog may close on any outside click.
 - A dialog or menu with a text filter focuses it on open, and only Esc (or ×) closes it. No letter key closes or toggles it while the filter has focus, including the key that opened it; every letter must be searchable.
@@ -94,7 +94,7 @@ These rules came from the job-hunt fit breakdown (Nov 2026). Byron called the re
 
 ## Controls and states
 
-These rules came from the job-hunt controls pass (Nov 2026). Byron called the result much better than before. [references/controls-layer.css](references/controls-layer.css) is a copyable template of the tokens and state model.
+Byron called the result of a controls pass with these rules much better than before (Nov 2026). [references/controls-layer.css](references/controls-layer.css) is a copyable template of the tokens and state model.
 
 - Build states as one system. Put one `:root` token block at the top of the stylesheet. Put one "Controls" section at the end that sets every state for every control family. Delete the scattered `:hover`, `:active`, and `:focus` rules that it replaces. Several `:root` blocks in one file mean earlier passes added patches instead of fixing the system.
 - Tokens cover color scales and semantic names, type, space, control heights, radius, elevation, focus, durations, and easings. Keep the app's colors. Organize them; don't rebrand.
@@ -138,7 +138,7 @@ Real rewrites:
 - Subtitle "The happy path first, then the three edge cases that break it" became "Models deployed before Sep 15 have no identity marker, and teardown refuses them".
 - Title "Every handoff is a gate a human or agent can pass" with subtitle "One process, run by people today and agents more over time" became "Who moves a bug along" with "A person or an agent can do each step, and any handoff can stop for a person".
 
-In daily-planning, `npm run lint -- <file.draft>` rejects the worst of these (layout narration, the drawing talking about itself, brief leftovers, filler, hedges) in titles, subtitles, group titles and legends. Passing lint is the floor, not the voice pass.
+Where a repo has a diagram copy lint (`npm run lint -- <file.draft>` in some planning repos), it rejects the worst of these (layout narration, the drawing talking about itself, brief leftovers, filler, hedges) in titles, subtitles, group titles and legends. Passing lint is the floor, not the voice pass.
 
 ## Working method
 
@@ -148,5 +148,5 @@ In daily-planning, `npm run lint -- <file.draft>` rejects the worst of these (la
 - Audit controls with scripts, not by eye. Use the `state-sheet` skill for a contact sheet of every control at rest, on hover, with focus, and pressed. Then run `node ~/.agents/skills/byron-ui-taste/scripts/audit-controls.mjs --base <url> --pages /,/list`. It lists targets under 24px, missing pointer cursors and focus styles, mixed heights in a toolbar row, and selections that change font weight. Run it before and after.
 - Before adding a rule for a selector, search the stylesheet for it. Earlier passes may define the same selector again further down, and the later rule wins. Fix the existing rules in place instead of adding a third.
 - Prove a popover with numbers: the next element's `top` is the same before and after open, and `elementFromPoint` inside the popover hits the popover. A screenshot taken too early can miss it.
-- Audit scripts must not change data. Block every non-GET request. Release a held mouse button away from the control, so no click fires. A press in an early screenshot run shortlisted and dropped real job postings. After each run, check `git status` for data the app writes.
+- Audit scripts must not change data. Block every non-GET request. Release a held mouse button away from the control, so no click fires. A press in an early screenshot run changed real records. After each run, check `git status` for data the app writes.
 - Disable transitions before you read computed styles. A style read in mid-transition reports the old value and gives a false miss.

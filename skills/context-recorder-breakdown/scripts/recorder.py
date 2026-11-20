@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read a Context Recorder session for an agent. Standard library only (plus the `observe` and `ffmpeg` CLIs).
+"""Read a Context Recorder session for an agent. Standard library only (plus `ffmpeg`, and the `observe` CLI when telemetry is configured).
 
   recorder.py brief   SESSION             what was tested, UTC window, problems on the tested host, marks
   recorder.py ledger  SESSION             every transcript sentence in time blocks, marks and problems inline
@@ -10,16 +10,28 @@
   recorder.py check   DIR/ledger.md       coverage gate: every block has an item, every mark is cited
 
 SESSION is a folder under ~/Movies/ContextRecorder/ or just its name (2026-11-02_16-25-02).
+
+Machine-specific settings live outside this repo, in ~/.config/context-recorder-breakdown/config.json
+(or the file $CRB_CONFIG names). Every key is optional:
+  repo         default checkout to search for code anchors
+  hosts        {"host name": "environment"} for hosts the inventory doesn't list
+  inventory    a Markdown table with rows like | `ENV` | host.example.com | ...
+  observe      {"logs": "<dataset id>", "spans": "<dataset id>"} to read telemetry with the `observe` CLI
+  local_logs   where a local server writes its logs, printed as a hint for local runs
+Without the file, prep skips telemetry and searches the running dev server's checkout or --repo.
 """
-import argparse, collections, contextlib, csv, datetime as dt, email, io, json, re, shutil, subprocess, sys
+import argparse, collections, contextlib, csv, datetime as dt, email, io, json, os, re, shutil, subprocess, sys
 from email import policy
 from html.parser import HTMLParser
 from pathlib import Path
 from urllib.parse import urlsplit
 
 ROOT = Path.home() / "Movies" / "ContextRecorder"
-SPANS, LOGS = "41766875", "43252774"
-INVENTORY = Path.home() / "repos/daily-planning/tasks/TASK-0059-assets/instance-inventory.md"
+_cfg = Path(os.environ.get("CRB_CONFIG", Path.home() / ".config/context-recorder-breakdown/config.json")).expanduser()
+CONFIG = json.loads(_cfg.read_text()) if _cfg.exists() else {}
+SPANS, LOGS = CONFIG.get("observe", {}).get("spans"), CONFIG.get("observe", {}).get("logs")
+INVENTORY = Path(CONFIG["inventory"]).expanduser() if CONFIG.get("inventory") else None
+REPO = Path(CONFIG["repo"]).expanduser() if CONFIG.get("repo") else None
 
 
 def load(arg):
@@ -27,7 +39,7 @@ def load(arg):
     if not p.exists():
         p = ROOT / arg
     if not (p / "session.json").exists():
-        sys.exit(f"{p}: no session.json. Process it first: python3 ~/repos/context-recorder/scripts/process_session.py {p}")
+        sys.exit(f"{p}: no session.json. Process it first with Context Recorder's scripts/process_session.py {p}")
     return p.resolve(), json.load(open(p / "session.json"))
 
 
@@ -69,12 +81,12 @@ def host(url):
 
 def env_for(h):
     n = urlsplit(h).hostname or ""
-    if n == "relationalai.up.railway.app":
-        return "staging"
+    if n in CONFIG.get("hosts", {}):
+        return CONFIG["hosts"][n]
     if n in ("localhost", "127.0.0.1"):
         return "local"
-    # Rows look like: | `MAREF2` | modeler-maref2.up.railway.app | ...
-    if n and INVENTORY.exists():
+    # Rows look like: | `ENV` | app-env.example.com | ...
+    if n and INVENTORY and INVENTORY.exists():
         m = re.search(r"^\|\s*`([^`]+)`\s*\|\s*" + re.escape(n) + r"\s*\|", INVENTORY.read_text(), re.M | re.I)
         if m:
             return m.group(1)
@@ -163,7 +175,7 @@ def cmd_brief(a):
     print(f"Session {path.name} · {mmss(s['duration'])} · {len(s['marks'])} marks · {len(s['transcript'])} sentences"
           + (f" · joined from {len(segs)} recordings" if len(segs) > 1 or (segs and segs[0]['source'] != '.') else ""))
     print(f"UTC {t0:%Y-%m-%dT%H:%M:%SZ} – {t1:%H:%M:%SZ}  (folder names are local time)")
-    print(f"Tested host ({how}): {h or 'unknown'} → environment: {env_for(h) or 'look up the host in daily-planning tasks/TASK-0059-assets/instance-inventory.md'}")
+    print(f"Tested host ({how}): {h or 'unknown'} → environment: {env_for(h) or 'unknown (add the host to the config, or pass --env)'}")
     others = [f"{k} ({v})" for k, v in hosts.most_common() if k != h]
     if others:
         print("Other tabs, ignored: " + ", ".join(others[:5]))
@@ -334,8 +346,11 @@ def events(path, s, env, start, end, slow_s=5):
 def cmd_observe(a):
     path, s = load(a.session)
     h, env, start, end = window(path, s, a.env)
+    if not (SPANS and LOGS):
+        sys.exit("Telemetry isn't configured: add an observe entry to the config file (see the module docstring).")
     if env == "local":
-        print("Local run: read /Users/byronwall/repos/modeler/server/logs/redwood2_*.jsonl (newest first) for this window,")
+        if CONFIG.get("local_logs"):
+            print(f"Local run: read {CONFIG['local_logs']} (newest first) for this window,")
         print("or pass --env with the environment your local server exports to Observe.")
     if not env or env == "local":
         sys.exit(f"No Observe environment for {h or 'this session'}; pass --env NAME.")
@@ -507,9 +522,6 @@ def screens(path, s):
     return out
 
 
-MODELER = Path.home() / "repos/modeler"
-
-
 def local_checkout(h):
     """The git checkout serving a localhost host, if that dev server is still running (lsof → process cwd → git root)."""
     port = urlsplit(h).port
@@ -528,15 +540,18 @@ def code_source(h, rev, repo=None):
     """(repo, tree, description) to search: the deployed revision, the running local checkout, or origin/main."""
     if repo:
         return Path(repo).expanduser(), None, f"{repo} (working tree)"
-    if rev and subprocess.run(["git", "-C", str(MODELER), "cat-file", "-e", f"{rev}^{{commit}}"], capture_output=True).returncode == 0:
-        return MODELER, rev, f"Modeler @ {rev} (deployed revision)"
+    if REPO and rev and subprocess.run(["git", "-C", str(REPO), "cat-file", "-e", f"{rev}^{{commit}}"], capture_output=True).returncode == 0:
+        return REPO, rev, f"{REPO.name} @ {rev} (deployed revision)"
     if env_for(h) == "local":
         top = local_checkout(h)
         if top:
             return top, None, f"{top} (working tree of the dev server still listening on {h})"
-        return MODELER, "origin/main", f"Modeler @ origin/main (local run; its server isn't running any more, so pass --repo <worktree> to be exact)"
-    hint = f" (revision {rev} isn't local: `git -C {MODELER} fetch origin {rev}`, then rerun)" if rev else " (revision unknown; pass --rev or --repo)"
-    return MODELER, "origin/main", "Modeler @ origin/main" + hint
+        if REPO:
+            return REPO, "origin/main", f"{REPO.name} @ origin/main (local run; its server isn't running any more, so pass --repo <worktree> to be exact)"
+    if not REPO:
+        return Path.cwd(), None, f"{Path.cwd()} (working tree; no repo configured, so pass --repo to search another checkout)"
+    hint = f" (revision {rev} isn't local: `git -C {REPO} fetch origin {rev}`, then rerun)" if rev else " (revision unknown; pass --rev or --repo)"
+    return REPO, "origin/main", f"{REPO.name} @ origin/main" + hint
 
 
 def code_anchors(s, repo, tree, desc):
@@ -610,8 +625,9 @@ def cmd_prep(a):
 
     h, env, start, end = window(path, s, a.env)
     evs, rev = [], None
-    if a.no_observe or not env or env == "local":
-        note(f"observe: skipped ({'--no-observe' if a.no_observe else 'no Observe environment for ' + (h or 'this session') + '; pass --env'})")
+    if a.no_observe or not (SPANS and LOGS) or not env or env == "local":
+        why = "--no-observe" if a.no_observe else "telemetry not configured" if not (SPANS and LOGS) else f"no Observe environment for {h or 'this session'}; pass --env"
+        note(f"observe: skipped ({why})")
     else:
         buf = io.StringIO()
         with contextlib.redirect_stdout(buf):
@@ -677,7 +693,7 @@ def main():
     r = sub.add_parser("prep"); r.add_argument("session"); r.add_argument("-o", "--out", required=True)
     r.add_argument("--assets", help="copy mark images here as mark-NNN.* (default OUT/images)")
     r.add_argument("--env"); r.add_argument("--no-observe", action="store_true")
-    r.add_argument("--rev", help="Modeler commit to search (default: the deployed revision from Observe)")
+    r.add_argument("--rev", help="commit to search in the configured repo (default: the deployed revision from telemetry)")
     r.add_argument("--repo", help="checkout to search in its working tree, e.g. the worktree a local run served")
     r.add_argument("--slow", type=float, default=5, help="spans slower than this many seconds join the ledger")
     r.set_defaults(fn=cmd_prep)

@@ -1,5 +1,5 @@
 /* Controls template: one token block and one state model.
-   Distilled from the job-hunt viewer (Nov 2026), where it replaced four stacked :root blocks
+   Distilled from a viewer app (Nov 2026), where it replaced four stacked :root blocks
    and 43 one-off hover/press/focus rules. Copy it, rename the classes to the app's own,
    and keep the app's existing colors (organize them; don't rebrand).
 
