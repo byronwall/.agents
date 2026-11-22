@@ -13,6 +13,7 @@
 - Prerender to static HTML when the site is a SolidJS app, so the content is in the HTML for search engines and agents.
 - Add one Playwright check (`site/tests/site.spec.ts`, or `site/scripts/check_site.py` in a Python repo). It checks that the page renders its sections, that every image, local link and `#anchor` resolves, and that the main interaction works. Run it locally before the PR. Add it to CI only when the repo already installs Playwright browsers there.
 - Copy the template to `.github/workflows/pages.yml`. Check the action versions with `gh api repos/<action>/releases/latest --jq .tag_name` and use the latest major, so GitHub does not warn about an old Node runtime.
+- Confirm that the major tag exists before you use it: `gh api repos/<action>/git/ref/tags/v<N>`. Some actions publish only full versions (`astral-sh/setup-uv` has no `v8`+ major tags). Pin the full version then. The PR cannot run the deploy, so a bad tag shows up only after the merge (llmly's first deploy failed this way).
 
 ## Computed numbers
 
