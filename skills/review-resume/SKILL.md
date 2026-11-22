@@ -1,13 +1,13 @@
 ---
 name: review-resume
-description: Review, critique, restructure, or rewrite a resume from a PDF, DOCX, image, webpage, pasted text, or other source. Use when Codex needs to improve resume content or layout, make a resume more concise and scannable, create a one-page industry resume, assess bullets and skills, identify unsupported or weak claims, elicit missing impact evidence, compare resume variants, or edit and verify a resume artifact.
+description: Review, critique, restructure, or rewrite a resume from a PDF, DOCX, image, webpage, pasted text, or other source. Use when Codex needs to improve resume content or layout, make a resume more concise and scannable, create a one-page industry resume, assess bullets and skills, identify unsupported or weak claims, elicit missing impact evidence, compare resume variants, edit and verify a resume artifact, or produce a markup artifact that overlays the review on the resume page with highlights, popover notes, and priority tiers.
 ---
 
 # Review Resume
 
 Review the resume as both a five-second human scan and an evidence-backed argument for a target role. Preserve facts. Improve the strongest truthful version of the candidate rather than manufacturing a more impressive one.
 
-Read [references/rubric.md](references/rubric.md) before reviewing or rewriting a resume.
+Read [references/rubric.md](references/rubric.md) before reviewing or rewriting a resume. Read [references/markup-artifact.md](references/markup-artifact.md) before building a markup artifact.
 
 ## Workflow
 
@@ -17,6 +17,7 @@ Read [references/rubric.md](references/rubric.md) before reviewing or rewriting 
    - **Rewrite:** produce improved content while flagging facts that need confirmation.
    - **Artifact edit:** modify the requested file, render it, and visually verify the result.
    - **Variants:** create meaningfully different positioning choices from the same verified facts.
+   - **Markup artifact:** publish the review as an overlay on the real resume page. Use it when Byron asks for an artifact, a markup, an overlay, or a page. Build it with the bundled scripts; see the reference.
 3. Determine the likely target role from the request and resume. If unknown, give a strong general review and name the one or two targeting decisions that would most change the result. Do not block useful work on avoidable clarification. Apply the governing order rule: **put the most relevant thing first**. For an industrial role, put relevant industry experience before education, skills, research, leadership, or less relevant work.
 4. Build a private fact boundary before rewriting:
    - Treat employers, titles, dates, education, tools, responsibilities, outcomes, and numbers as claims that must come from the source or user.
@@ -33,7 +34,8 @@ Read [references/rubric.md](references/rubric.md) before reviewing or rewriting 
    - artifact rendering and print behavior.
 6. Separate observations from actions. Keep the overall review focused on the five-second story and overall candidacy. Put structure, layout, and repeated content patterns in their own section. Put concrete changes in a dedicated action plan. Do not mix line rewrites into either review section.
 7. Rewrite with the highest-value changes first. Keep important claims concrete and defensible. Cut low-value content before reducing type size. For every proposed experience bullet:
-   - Target 14 words or fewer and roughly 80–90 characters as a drafting proxy for one line at about 12-point type.
+   - Target 14 words or fewer and roughly 80–90 characters as a drafting proxy for one line at about 12-point type. One line is a strong preference, not a hard rule: a wrap is not fatal, so mention wraps once at the document level and fix them where the fix is cheap (usually cut filler).
+   - Flag a **dangling line**: a wrapped item whose last line holds 3 words or fewer. It spends a whole line on almost nothing, so always fix it.
    - Show the word count after the proposal, outside the proposed resume text.
    - Treat actual rendered fit at the intended font, width, margins, and bullet indent as authoritative; a word or character target cannot guarantee line fit.
    - If one compact version preserves the important claim, provide only that version.
@@ -45,11 +47,12 @@ Read [references/rubric.md](references/rubric.md) before reviewing or rewriting 
    - As a default, do not start adjacent bullets with the same verb and avoid using one opening verb more than twice within a role or compact section.
    - Treat those limits as editorial checks, not quotas. Keep a repeated verb when it is uniquely accurate; truth and precision outrank cosmetic variety.
    - Do not swap in inflated or imprecise synonyms merely to sound different. `Built` is useful, but it is not a universal replacement for `developed`, `designed`, `implemented`, `created`, `automated`, or a more exact verb.
-9. Perform a line-by-line review of every experience bullet and every consequential summary, skills, education, project, research, and leadership line. Include strong lines, not only problems. Mark each item `Keep`, `Revise`, `Clarify`, or `Cut`.
+9. Perform a line-by-line review of every experience bullet and every consequential summary, skills, education, project, research, and leadership line. Include strong lines, not only problems. Mark each item `Keep`, `Revise`, `Clarify`, `Move`, or `Cut`, and give every item except `Keep` a priority tier: `Do first`, `Do next`, or `Optional` (rules in the rubric).
 10. Format every line item as an anchored record:
    - Start with a standalone bold paragraph: `**Existing:** <exact source wording>`. This is the visual anchor and must not be a bullet.
    - Put one compact bullet list immediately below that anchor, using only the fields that apply:
-     - `**Status:** Keep | Revise | Clarify | Cut`
+     - `**Status:** Keep | Revise | Clarify | Move | Cut`
+     - `**Priority:** Do first | Do next | Optional` (omit for Keep)
      - `**Proposed:** <replacement wording>` when revising
      - `**Option A:**` / `**Option B:**` only for a meaningful tradeoff
      - `**Split 1:**` / `**Split 2:**` when two one-line bullets are better
@@ -61,7 +64,8 @@ Read [references/rubric.md](references/rubric.md) before reviewing or rewriting 
 11. Ask focused probing questions inside the related line item rather than collecting detached questions elsewhere. Prefer a small number of high-value questions, but make their connection to the exact source line unmistakable.
 12. When reviewing a student or recent graduate whose GPA is missing, ask for it and state the recommendation explicitly: use the target employer's known cutoff when available; otherwise use 3.0 as the general inclusion threshold. Recommend including a cumulative GPA at or above 3.0, and strongly recommend including one above 3.25. Reduce GPA emphasis after several years of relevant work.
 13. If the user has not yet answered, provide provisional language without fabricated placeholders masquerading as facts. Use bracketed prompts only when they make the next revision easier, such as `[monthly volume]` or `[time saved]`.
-14. If editing an artifact, render and inspect every page. Verify page count, readable typography, accidental wraps, clipping, visual hierarchy, contact-line fit, whitespace balance, and print output.
+14. Comment on the claims, not the person. Do not infer class year, seniority, or age from dates and frame critique around it ("for a sophomore…"). Say what a claim does: "claims more than the bullet shows", not "oversells a junior's work". When class year matters to the advice, ask.
+15. If editing an artifact, render and inspect every page. Verify page count, readable typography, accidental wraps, clipping, visual hierarchy, contact-line fit, whitespace balance, and print output.
 
 ## Evidence questions
 
@@ -91,7 +95,7 @@ For a review, return exactly these major sections:
    - Explain each recurring pattern once. Give it a short descriptive name that line items can reference without repeating the full commentary.
    - When opening-verb repetition is material, provide one compact `Suggested verb palette` of roughly 6–10 accurate, role-specific choices. Do not turn the review into a thesaurus or repeat the palette under each line.
 3. **Action plan**
-   - Give a prioritized, actionable checklist of structural, ordering, layout, and content changes.
+   - Give an actionable checklist of structural, ordering, layout, and content changes, grouped by tier: Do first, then Do next, then Optional.
    - Separate actions that can happen now from actions that depend on candidate answers.
 4. **Line-by-line review**
    - Organize by resume section and company.
@@ -103,13 +107,15 @@ For a review, return exactly these major sections:
 5. **Open decisions**
    - List only global facts or targeting choices that affect multiple lines or the whole document. Do not repeat line-specific questions here.
 
+For a markup artifact, link the published page and give only the main finding, the tier counts, and the decisions Byron should check. Do not repeat the notes in chat.
+
 For a rewrite, return the revised resume first, followed by a short evidence/question list. For an artifact edit, link the finished file and summarize only the material decisions and unresolved evidence gaps.
 
 Stay candid about tradeoffs. Label field-specific exceptions, uncertain advice, and ATS assumptions rather than presenting folklore as fact.
 
 ## Brevity
 
-Make the review useful without becoming an essay:
+Make the review useful without becoming an essay. Byron found a full text review of a one-page resume "too crazy long"; when a text review would run past about one screen, say so and offer the markup artifact in one line.
 
 - Keep **Review** to at most three short paragraphs.
 - Keep recurring themes to the few patterns that materially affect multiple lines.

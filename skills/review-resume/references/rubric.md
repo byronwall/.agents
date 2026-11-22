@@ -12,7 +12,8 @@ The governing order rule is: **put the most relevant thing first**. Relevance to
 - Default to one page for a typical industry resume, especially with less than roughly 20 years of relevant experience. Recognize legitimate exceptions such as academic CVs, publication-heavy fields, federal formats, and explicitly requested multi-page resumes.
 - Fill one page deliberately at normal type sizes. Two or three unused lines are acceptable; half a page usually means missing evidence or inefficient composition.
 - Never rescue excess content by making the text uncomfortably small.
-- Avoid accidental line wraps. Assume only the first line of a bullet may be read.
+- Prefer one-line bullets, and assume the first line carries the read. A wrap is not fatal: mention wraps once at the document level and fix them where the fix is cheap.
+- Always fix a **dangling line**: a wrapped item whose last line holds 3 words or fewer. It spends a full line on almost nothing.
 - Condense contact information into one compact line when practical.
 - Remove low-value history, duplicated claims, decorative rules, meta-commentary, and detached material before compressing typography.
 
@@ -82,7 +83,7 @@ Make each bullet:
 - specific about the thing built, changed, delivered, governed, analyzed, or enabled;
 - defensible in an interview.
 
-Use a one-line target aggressively. For proposed experience bullets, aim for no more than 14 words and roughly 80–90 characters, which is a useful drafting proxy for a single line around 12-point type. Count whitespace-separated words and report the count outside the proposed text. Always defer to rendered fit because font metrics, margins, available width, indentation, and word length vary.
+Treat one line as a strong preference, not a hard rule. For proposed experience bullets, aim for no more than 14 words and roughly 80–90 characters, which is a useful drafting proxy for a single line around 12-point type. Count whitespace-separated words and report the count outside the proposed text. Always defer to rendered fit because font metrics, margins, available width, indentation, and word length vary.
 
 When a bullet wraps:
 
@@ -177,7 +178,8 @@ Review each consequential line with one visually distinct anchored record. The c
 ```markdown
 **Existing:** Exact source line
 
-- **Status:** Keep | Revise | Clarify | Cut
+- **Status:** Keep | Revise | Clarify | Move | Cut
+- **Priority:** Do first | Do next | Optional (omit for Keep)
 - **Proposed:** Fact-preserving one-line replacement, when useful *(N words)*
 - **Option A:** Alternative one-line emphasis, only for a meaningful tradeoff *(N words)*
 - **Option B:** Second meaningful alternative *(N words)*
@@ -211,6 +213,16 @@ For a line needing evidence:
 ```
 
 Prioritize questions about the most recent and relevant experience. Do not bury the user in questions about every line at once.
+
+## Priority tiers
+
+Give every reviewed line except a `Keep` one tier. The tier answers "what should the candidate change first?" It is separate from the action (`Cut`, `Clarify`, `Revise`, `Move`), which says what kind of change it is.
+
+- **Do first:** a recruiter or interviewer would discount the line as it stands. Examples: a claim the bullet can't back up ("shipped", "100% readiness", "spearheaded"), planned work stated as experience, a section in the wrong place, a visible typo or spacing error, a top project with no context.
+- **Do next:** the change makes a line clearer or tighter. Examples: a cheap wrap, a filler tail, a repeated bullet, grouping roles under one employer, a missing date.
+- **Optional:** small polish the candidate can skip. Examples: an ambiguous word, a low-relevance line, moving a loose memberships line.
+
+Keep the tiers honest. If everything is Do first, nothing is. Order the action plan by tier. In a visual artifact, let the tier drive color and keep `Keep` neutral, so color marks only what needs attention.
 
 ## Review versus actions
 
@@ -258,6 +270,7 @@ Example:
 - Use direct ownership language when the source supports it.
 - Do not turn participation into leadership, team results into sole credit, or aspirations into experience.
 - Make every final line something the candidate can explain confidently in an interview.
+- Comment on the claims, not the person. Do not infer class year, seniority, or age from dates and frame critique around it. Write "claims more than the bullet shows", not "oversells a sophomore's work". Ask when class year matters to the advice.
 
 ## Final artifact checks
 
@@ -266,7 +279,7 @@ Example:
 - Contact details fit cleanly on one line when practical.
 - A one- or two-line summary creates a clear transition from the header to experience.
 - Typography scale is readable and consistent.
-- No accidental bullet, heading, date, or skill wraps.
+- No dangling lines, and no heading, date, or skill wraps.
 - No clipping, crowding, orphaned lines, or excessive empty space.
 - Company names lead and are visually stronger than role titles unless a deliberate exception is justified.
 - Employer/role hierarchy is immediately understandable, and comparable dates share a precise right gutter.
