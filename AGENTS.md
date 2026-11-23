@@ -171,6 +171,7 @@ Name every thread so Byron can read its state and topic in the sidebar. Use this
 - On a branch other than `main`, create small, coherent commits as work progresses.
 - Use useful checkpoint commits instead of accumulating a large diff.
 - On `main`, do not create routine progress commits. Commit on `main` only when Byron explicitly requests it.
+- Exception: in this repository (`bdw-agents`, Byron's global skills), always commit each change to `main` and push it right away. Skills are read live from here through the `~/.agents/skills` symlinks, so an unpushed edit is lost to other machines.
 - Exception: a repository with no remote, where Byron works directly on `main` (for example `job-hunt`), has no PRs. In it, commit to `main` as work progresses, with the same small, coherent commits. Commit only your own changes. When a file also holds another session's uncommitted edits, put it in a separate commit and say so in the message.
 - Before each commit, verify both Git identities are `Byron Wall <byron@byroni.us>`.
 - Never use an agent, bot, Codex, or OpenAI identity for the author or committer.
