@@ -147,6 +147,7 @@ Report findings; don't fix the change unless asked. A break-it pass that silentl
 This is step 3 of the review gate in `the owning workspace’s review-gate instructions`. When running it there:
 
 - **Order:** run it after the Shakedown (step 2), so its correctness findings become candidates rather than rediscoveries, and before the one-level-up pass (step 4), which takes every `base: same` break and every test gap as a sibling to look for.
+- **Reads the obligations ledger:** when `gate-<pr>/obligations.md` exists (gate step 0), its claim, contract and envelope rows are candidates in step 1, and each probe you run fills its row's Evidence and Status. A limit row is probed one past the limit at its worst-case input.
 - **Feeds step 5:** the boundary card's outputs list is the start of step 5's surface list (every surface the diff reaches, proven at its destination). Hand it over rather than rebuilding it.
 - **Run folder:** `tasks/TASK-NNNN/gate-<pr>/break-it/` in the planning workspace, under the task that owns the gate run. Here, and only here, the diagrams go in that task's `tasks/TASK-NNNN/diagrams/` folder instead of the run folder (numbered, embedded in the gate write-up), so the viewer shows them; follow the workspace's diagram rules (`npm run lint -- <file.draft>`).
 - **Write-up:** the gate's README gets a "Break-it pass" section: the verdict line, the results table and links to the cards and the boundary diagram.

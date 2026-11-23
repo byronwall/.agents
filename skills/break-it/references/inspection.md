@@ -54,6 +54,7 @@ Pick what fits the input's type. For each, ask what the code does, not just whet
 - **Absence:** missing, null, empty string, empty list, zero, field present but blank.
 - **Multiplicity:** duplicated item, duplicated header or key, the same request twice, one item vs many.
 - **Size:** one more than a limit, a very long string, a huge list, a deep nesting.
+- **Accumulation:** what grows when the same path runs again: history re-sent each turn, a transcript a tool loop extends, a retry or recovery that replays earlier input, pages fetched into one list, a batch that grows with the customer. Count it in the unit the limit names (per request, per message, per minute, per account), not the unit the code builds in, and probe the call where it first crosses.
 - **Shape:** wrong type, an extra unknown field, an old schema version, a new enum value the code doesn't know.
 - **Encoding and case:** Unicode, mixed case, trailing dot or slash, whitespace, percent-encoding, a different but equivalent spelling (`localhost` vs `127.0.0.1` vs `::1`).
 - **Boundaries of meaning:** the value at the edge of a range, a time at midnight or across a DST change, a negative or a future date.
