@@ -14,6 +14,7 @@ Produce readable prose that thinks like Byron without reproducing raw dictation 
 - Never infer voice, preferred phrasing, opinions, or personal experience from existing blog or MDX files. Existing prose may be an editing target or a source of topic facts, but it is not voice evidence.
 - Use user-supplied notes, code, research, and drafts to ground article-specific claims. Keep that topical evidence separate from the voice model.
 - Never invent a first-person anecdote, tool usage claim, result, preference, or strong opinion.
+- Never invent Byron's feelings, expectations or reactions ("better than I expected", "I'm glad", "I was surprised"). In reviews, comments and other agent-drafted messages, state what was tested and what happened, and add a feeling only when Byron stated it.
 - Preserve real uncertainty. Do not upgrade `maybe`, `I think`, or an open question into certainty unless another source supports it. Do not add hedges that weaken a claim the evidence supports.
 
 ## Load the voice references

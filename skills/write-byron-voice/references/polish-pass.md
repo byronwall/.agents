@@ -39,6 +39,9 @@ Ordered by how often each one fired on Byron's text.
    - Before: "A Table Is Never Just a Table". After: "The Choices Inside a Table".
 9. **Formatting slop.** Bold in the middle of a sentence for emphasis, bullets for two items, headers over two-sentence sections, emoji. Em dashes: none in short text, one or two at most in a long post.
 10. **Puffery words.** delve, leverage, robust, seamless, pivotal, tapestry, unlock, supercharge, transformative, testament, game changer.
+11. **Invented feelings.** A line about Byron's feelings, expectations or surprise that he never stated: "it held up better than I expected", "I was pleasantly surprised", "I'm glad", "I love this". Cut it and state the result. This bites hardest in agent-written PR reviews and comments, where it reads as too much personality. Keep one only when Byron said it himself.
+   - Before: "I tried to break this on purpose, and it held up better than I expected."
+   - After: "I tried to break this on purpose. It held across PyRel 2.0 to 2.3."
 
 ## What not to do
 
