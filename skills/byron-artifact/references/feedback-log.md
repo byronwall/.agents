@@ -36,6 +36,15 @@ Artifact `VwWn22HVGcfNv8z3eynWet`, "Core PyRel Explained". The first version add
 - "I don't like the styling though on the examples… we've got a bunch of scroll bars and rounding and all sorts of things. It's all just kind of goofy and a little bit inconsistent with the rest of the styles."
 - "As I look at them, they're just sort of like categorically worse than the diagrams. They don't have color and they're not well organized… let's just remove the examples." The rest of the page (spine, notation table, per-operation diagram and text) stood as built.
 
+## Rel app Server Rewrite page (TASK-0113, November 24, 2026)
+
+Artifact `GwBNQTkyagFDoeu9dLnSvS`, with a sibling page on the live-query prototype (`EtYUmJsK73qDPihDVrUKVB`). One round after the first publish.
+
+- Storage: "provide a clearer diagram that breaks down the storage situation… storage related to Snowflake and storage related to the [op]log, and then show the rel app metadata in a diagram that just makes it clear exactly what's going on there."
+- Overview: the single before/after "who owns the model" drawing "kind of misses the big picture, which is how do we get from here to there." Move "server today", "server as intended" and "proposed incremental delivery" to the top.
+- Scope question: "how much of the work… is rewriting the entity system versus just using everything that we have," so explain how the entity system relates to PyRel's metamodel.
+- Overlap: "all of the file-based stuff is being removed by Zach currently, and so we really don't need to talk a whole lot about that."
+
 ## Earlier asks that point the same way
 
 - October 14 and 23, 2026 (plan viewer graphs): an expand control into a full-viewport modal with drag to pan and wheel to zoom; "allow for overpan so that I can place items from the far left edge of [the] graph on the… right edge of my screen"; then "add fit to graph and reset zoom."
