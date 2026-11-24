@@ -44,6 +44,8 @@ Every diagram opens full screen in the template's viewer. Never ship a diagram t
 - take ← → to step, + − to zoom, 0 to fit, Esc to close, return focus to the thumbnail, and lock page scroll while open;
 - never select text while dragging, and keep text sharp at any zoom. The template resizes the image instead of CSS-scaling it, because scaled SVG goes blurry when it settles.
 
+When the diagrams already draw the code (colored ranges, annotations, before and after), don't add raw code panes or example browsers beside them. Unhighlighted text in nested rounded boxes with their own scroll bars reads worse than the diagram and clashes with the page; point to the source file in the task instead.
+
 Inline, diagrams are `button.pic` thumbnails on a light `--figure-bg` panel (kept light in dark mode), in a grid of about 340px columns; one wide figure per page at most, capped near 90% of the viewport height. Each caption starts with a bold name and then says what the drawing found. Render draftably diagrams with `draftably inspect <file.draft> --svg > site/d/<name>.svg` and publish them through the Artifact tool's `files` with `root` set to `site/`.
 
 ## Look
