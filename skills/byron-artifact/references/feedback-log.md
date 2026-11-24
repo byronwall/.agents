@@ -44,6 +44,7 @@ Artifact `GwBNQTkyagFDoeu9dLnSvS`, with a sibling page on the live-query prototy
 - Overview: the single before/after "who owns the model" drawing "kind of misses the big picture, which is how do we get from here to there." Move "server today", "server as intended" and "proposed incremental delivery" to the top.
 - Scope question: "how much of the work… is rewriting the entity system versus just using everything that we have," so explain how the entity system relates to PyRel's metamodel.
 - Overlap: "all of the file-based stuff is being removed by Zach currently, and so we really don't need to talk a whole lot about that."
+- Round two, both pages: "any place where we have a before and an after diagram, I just want them to be side by side," annotated 'in the top left and top right as before and after.' A lone before or after is fine, but the label must make that clear.
 
 ## Earlier asks that point the same way
 
