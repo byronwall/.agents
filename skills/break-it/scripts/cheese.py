@@ -152,7 +152,12 @@ def finish(data: dict, run: Path) -> int:
     errors = validate(data)
     gaps = []
     # Diagrams are a required output (SKILL.md step 5): a boundary diagram plus one per serious break.
-    drafts = list(run.rglob("*.draft")) + list(run.parent.glob("diagrams/*.draft"))
+    # The run folder, then each folder above it up to the task folder (tasks/TASK-NNNN/), whose diagrams/ the review gate uses.
+    drafts = list(run.rglob("*.draft"))
+    for up in list(run.parents)[:3]:
+        drafts += list(up.glob("diagrams/*.draft"))
+        if up.name.startswith("TASK-"):
+            break
     if not drafts:
         errors.append("no .draft diagram found in the run folder or its task's diagrams/ folder; "
                       "SKILL.md step 5 requires a boundary diagram and a Swiss-cheese diagram per serious break "
