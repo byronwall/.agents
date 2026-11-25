@@ -120,6 +120,8 @@ Byron called the result of a controls pass with these rules much better than bef
 - Keep decision diamonds close to square with the text inside.
 - Do not bake tables or checklists into diagram images.
 - Choose a palette for the context instead of fixed hard-coded colors.
+- Color accents; it doesn't organize. Use it on the one line, edge or value the reader must notice, and leave groups and sections neutral. Never fill a whole section with color ("we should not color whole sections", November 24).
+- When a diagram uses notation you invented (a condensed IR, a shorthand for a query), the title or subtitle says so, so nobody hunts for it in the library ("this is not a thing in the library", November 24).
 - Group labels must not collide with group borders.
 - Titles, subtitles, labels and notes in a diagram meant for others are Byron's prose: run them through `write-byron-voice` before rendering.
 
