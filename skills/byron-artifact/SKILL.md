@@ -70,7 +70,7 @@ Inline, diagrams are `button.pic` thumbnails on a light `--figure-bg` panel (kep
 
 ## Check before you publish
 
-The built-in browser isn't signed in to claude.ai, so check a local copy: serve `site/` with `python3 -m http.server` (under the `deadline` wrapper where one exists) and reload with a cache-busting query each time.
+The built-in browser isn't signed in to claude.ai, so check a local copy over HTTP. Never open a `file://` path: the browser pane's page tools refuse local files ("page tools can't act on it here") and screenshots come back blank. Serve `site/` with `python3 -m http.server <port> --directory site` in the background under the `deadline` wrapper where one exists, `navigate` a fresh tab to `http://localhost:<port>/`, reload with a cache-busting query each time, and stop the server when you're done.
 
 - Desktop width and 375px in dark mode: no sideways scroll, no overlapping columns, the nav stays one scrollable row on a phone.
 - Open a spine row, a hover card and the viewer: fitted on open, drag pans without selecting text, arrows step through every diagram, Esc closes.
