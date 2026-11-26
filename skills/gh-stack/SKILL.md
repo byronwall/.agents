@@ -83,6 +83,15 @@ gh stack top                    # return to where you were
 gh stack push
 ```
 
+## Trunk freshness
+
+`gh stack init` branches from the **local** trunk. In a worktree setup the local `main` is often
+checked out in the main checkout and weeks stale, and `git branch -f main` refuses to move it. A
+stack built on it carries old code: tests and surveys then measure the wrong base. Before
+`init`, run `git fetch origin` and compare `git rev-parse main origin/main`. If they differ, run
+`gh stack rebase` right after `init` (it rebases onto the remote trunk) and check `git log -1`
+on the bottom layer's parent.
+
 ## Core loop
 
 ```bash
