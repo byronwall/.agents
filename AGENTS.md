@@ -99,10 +99,33 @@ Name every thread so Byron can read its state and topic in the sidebar. Use this
 - Prefer delegation even when it takes longer. Byron accepts the extra time and
   expects the orchestrator to review work from smaller models.
 - A task that is not an orchestrator can work directly unless another rule
+## Model choice for workers
+
+Pick the best-fit model for each subagent, worker session, or dedicated task. Do not give a worker the orchestrator's model by default. Use the smallest model that can do the work reliably.
+
+- Mechanical, well-scoped work: rebases, conflict resolution with a clear rule, renames, moves, lint or type fixes, version bumps, data gathering, transcript or log searches, running checks and reporting.
+  - Claude: Sonnet 5.5 (`sonnet`). Use Haiku 5.5 (`haiku`) for pure lookups and file sweeps.
+  - Codex: GPT-6 Luna at medium reasoning.
+- Ordinary feature and fix work with a clear brief, and browser verification.
+  - Claude: Sonnet 5.5.
+  - Codex: GPT-6.1 Terra (`gpt-6.1-terra`) at High reasoning.
+- Judgment-heavy work: architecture or design choices, core logic (see "Running Codex from Claude"), unclear bugs after one failed attempt, product questions, and orchestration.
+  - Claude: Opus 5.5 (`opus`).
+  - Codex: GPT-5.6 Sol at High reasoning for an orchestrator. Terra High for workers.
+- Frontier work: only when the `token-burn` skill picks it, or Byron asks. Claude: Fable 5.2 (`fable`).
+
+Rules:
+
+- Choose the model from the task, not from the repository or the orchestrator. A rebase of a hard PR is still a rebase.
+- Set the model on every spawn (`model` on the Agent tool or `start_session`). Do not leave it to inherit.
+- State the model and the reason in one short phrase when you start the worker, for example "Sonnet: mechanical rebase".
+- Move up one tier when a worker fails twice on the same step or reports that the task needs judgment. Do not start at the higher tier "to be safe".
+- Byron's explicit model choice always wins.
+
   requires delegation.
 - Use the orchestrator to separate implementation, verification, and follow-up work so each worker receives only the context needed for its role. Route findings and revisions through the orchestrator.
 - Use collaboration subagents for bounded workers on the current task. This includes investigation, implementation, and verification.
-- Unless Byron specifies otherwise, spawn each subagent with GPT-6 Luna at High reasoning. Give it only the context its role needs.
+- Pick each subagent's model and reasoning by "Model choice for workers" above. Give it only the context its role needs.
 - When Byron asks a thread to spawn a new persistent orchestrator, create it
   with GPT-5.6 Sol at High reasoning. Never use GPT-6 Luna for that
   orchestrator.
@@ -112,17 +135,15 @@ Name every thread so Byron can read its state and topic in the sidebar. Use this
 - Do not create a dedicated worker task for work that remains part of the current task. Create one only under the task-creation exceptions above.
 - If the current task remains responsible for the result, treat the work as a worker scope and use a subagent.
 - If subagents are unavailable, do the worker scope locally or serialize it. Do not use a dedicated task as a fallback.
-- When a dedicated worker task is justified, use GPT-6 Luna at High
-  reasoning unless Byron specifies otherwise.
-- Give Luna High workers a precise brief. Include the outcome, boundaries,
+- When a dedicated worker task is justified, pick its model by "Model choice
+  for workers" above.
+- Give workers a precise brief. Include the outcome, boundaries,
   evidence, acceptance criteria, checks, and report format.
-- Review Luna High results against direct evidence. Use a separate verification
+- Review worker results against direct evidence. Use a separate verification
   worker when the risk or user-visible scope warrants it.
 - Give each worker a clear and complete brief. Then let the worker finish without repeated messages or forced progress.
 - Use long wait intervals. Do not poll, prod, interrupt, or redirect a worker only because it remains active.
 - Intervene only when the worker requests attention, reports a blocker, fails, or runs well beyond the expected time.
-- Keep all subagent work on GPT-6 Luna at High reasoning. Change the
-  model only when Byron explicitly requests it.
 - For browser verification, use a separate subagent whenever practical. Treat it as a clean-room, black-box verification pass rather than a continuation of the coding worker.
 - Give the browser-verification worker the user-visible goal, acceptance criteria, starting URL or run instructions, relevant credentials or fixture guidance when authorized, and any known environmental constraints. Do not give it a source-code walkthrough, implementation explanation, or detailed hints about where bugs are likely to be.
 - The browser-verification worker should avoid reading source code unless it cannot proceed otherwise. If it must inspect code, it should state why and distinguish observations made before and after that inspection.

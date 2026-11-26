@@ -49,6 +49,9 @@ Load `mcp__ccd_session__start_session` first. Then, in one message:
 the `start_session` calls in parallel with:
 
 - `initiation: "user_asked"`, `context: "fresh"`, `use_worktree: true`
+- `model`: the best fit from "Model choice for workers" in
+  `~/.agents/AGENTS.md`. Rebases, conflict fixes and other mechanical layers
+  get `sonnet`, not `opus`. Name the model and reason in the title line.
 - short `name` and `branch_name` (for example `canvas-rail`), which you reuse as the plan
   step's `session`
 - `background`: product context, Byron's decisions so far, root causes found,

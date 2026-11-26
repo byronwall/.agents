@@ -1,6 +1,6 @@
 ---
 name: orchestrate-work
-description: Coordinate substantial work from one persistent orchestrator with narrowly scoped GPT-6 Luna collaboration subagents. Use when Byron says `$orchestrate-work`, asks Codex to be an orchestrator, requests parallel implementation or investigation, asks to split coding from verification, or wants a coordinated feedback loop. Create a dedicated Codex task only for a new orchestrator, an explicit request for a separate task, or a wholly new scope that needs independent ownership and history.
+description: Coordinate substantial work from one persistent orchestrator with narrowly scoped best-fit collaboration subagents (Luna or Terra). Use when Byron says `$orchestrate-work`, asks Codex to be an orchestrator, requests parallel implementation or investigation, asks to split coding from verification, or wants a coordinated feedback loop. Create a dedicated Codex task only for a new orchestrator, an explicit request for a separate task, or a wholly new scope that needs independent ownership and history.
 ---
 
 # Orchestrate Work
@@ -42,12 +42,13 @@ investigation, implementation, and verification.
 Subagents do not appear as sidebar tasks. Do not assign them sidebar numbers or
 create dedicated tasks only to preserve the title family.
 
-## Default to Luna subagents
+## Best-fit subagents
 
 - Use collaboration tools such as `spawn_agent`, `wait_agent`, `send_message`,
   `followup_task`, and `interrupt_agent`.
-- Unless Byron specifies otherwise, spawn workers with `model:
-  "gpt-6-luna"` and `reasoning_effort: "high"`.
+- Pick each worker's model and `reasoning_effort` by "Model choice for
+  workers" in `~/.agents/AGENTS.md`. Mechanical work gets `"gpt-6-luna"` at
+  `"medium"`; feature and judgment work gets `"gpt-6.1-terra"` at `"high"`.
 - Default to `fork_turns: "none"`. Use a small bounded turn count only when
   inherited context has clear value. Give each subagent a self-contained brief.
 - Default to a new subagent with empty context. Do not reuse a subagent only
@@ -90,8 +91,8 @@ When a dedicated task is justified:
 - Never create a git worktree unless Byron explicitly requests one.
 - For a new persistent orchestrator, use GPT-5.6 Sol at High reasoning. Never
   use GPT-6 Luna for that orchestrator.
-- For other dedicated tasks, use GPT-6 Luna at High reasoning unless project
-  instructions or Byron set a different default.
+- For other dedicated tasks, pick the model by "Model choice for workers" in
+  `~/.agents/AGENTS.md`.
 - For a worker in this orchestrator family, title it `<emoji> 01 · <short
   description>`, then increase the number by creation order.
 - For a new orchestrator, give it its own emoji and `⭐ <emoji> 00 · <short
@@ -127,7 +128,7 @@ Require each worker to inspect git status, preserve unrelated changes, report
 blockers precisely, and avoid coaching other workers. Route cross-worker
 findings through the orchestrator.
 
-Luna High is fast. State the decisive evidence, success boundary, required
+Workers are fast. State the decisive evidence, success boundary, required
 checks, and stopping condition. Add detail for ambiguous or high-risk work.
 
 ## Separate roles and context
@@ -172,9 +173,7 @@ Use a separate verification subagent when an independent pass is practical.
 
 ## Review from evidence
 
-Use GPT-6 Luna at High reasoning for all subagent work. Review each
-result against direct evidence and required checks. Change the model only when
-Byron explicitly requests it.
+Review each subagent result against direct evidence and required checks.
 
 When a subagent has trouble, give it the earlier attempts, errors, diagnostics,
 verification results, and exact unresolved question. Do not repeat discovery
