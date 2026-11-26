@@ -33,6 +33,7 @@ python3 $R                     # sessions in the window (--days N, --source clau
 python3 $R --scan > $TMPDIR/retro-scan.txt   # window report; saves this retro's metrics
 python3 $R --scan --section users            # one section, full text (sessions|trend|fails|denials|slow|users)
 python3 $R --digest FILE       # one session plus its subagents
+python3 $R --reviews --all-projects --days 7   # codex-review rounds per worktree: model, minutes, tokens, verdicts
 python3 $R --record FILE       # upsert findings into ~/.agents/retro-ledger.jsonl
 ```
 

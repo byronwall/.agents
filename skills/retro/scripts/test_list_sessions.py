@@ -27,4 +27,14 @@ f.write_text(json.dumps([{**row, "date": "2026-10-20", "prs": [2], "status": "do
 ls.record(f, "/p")
 (r,) = ls.ledger_rows()
 assert r["seen"] == ["2026-10-01", "2026-10-20"] and r["prs"] == [1, 2] and r["status"] == "done", r
+
+# A message typed while the agent works is a queued command wrapped in reminders; a task notice in the same shape is not Byron.
+t = Path(tempfile.mkdtemp()) / "s.jsonl"
+queued = lambda text: {"type": "attachment", "timestamp": "2026-11-23T04:03:53Z", "attachment": {"type": "queued_command", "prompt": [{"type": "text", "text": text}]}}
+t.write_text("\n".join(json.dumps(x) for x in [
+    queued("<system-reminder>\nLinked sessions now\n</system-reminder>\n\nFor the gnarly parts, have Codex review"),
+    queued("<task-notification>\n<status>completed</status>\n</task-notification>"),
+]))
+said = [data for kind, _, data in ls.events(t, "claude") if kind == "user"]
+assert said == ["For the gnarly parts, have Codex review"], said
 print("ok")

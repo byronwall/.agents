@@ -25,6 +25,7 @@ Usage:
   list_sessions.py --record FILE         # upsert findings (JSON list or JSONL) into the ledger
 """
 import argparse
+from collections import Counter
 import json
 import os
 import re
@@ -117,6 +118,10 @@ def _text(content):
     return ""
 
 
+# Reminders and task notices the harness wraps around a queued message; what is left is what Byron typed.
+QUEUED_NOISE = re.compile(r"<(system-reminder|task-notification)>.*?</\1>", re.S)
+
+
 def events(path, source, sidechain=False):
     """Yield (kind, ts, data) for user messages, tool calls, and tool results.
 
@@ -133,6 +138,15 @@ def events(path, source, sidechain=False):
             ts = rec.get("timestamp") or p.get("timestamp") or ""
             yield "meta", ts, rec
             if source == "claude":
+                # A message typed while the agent works arrives as a queued command, often wrapped in reminders.
+                queued = rec.get("attachment") or {}
+                if queued.get("type") == "queued_command" and not (rec.get("isSidechain") and not sidechain):
+                    prompt = queued.get("prompt")
+                    text = prompt if isinstance(prompt, str) else " ".join(c.get("text", "") for c in prompt or [] if isinstance(c, dict))
+                    text = QUEUED_NOISE.sub("", text).strip()
+                    if text:
+                        yield "user", ts, text
+                    continue
                 if (rec.get("isSidechain") and not sidechain) or rec.get("type") not in ("user", "assistant"):
                     continue
                 content = rec.get("message", {}).get("content")
@@ -646,6 +660,98 @@ def scan(rows, root, section, save):
             print(f"--- {tag}{ts[:16]}\n{text[:cap]}" + ("…" if len(text) > cap else ""))
 
 
+def review_run(path):
+    """One Codex rollout as a codex-review run or probe, else None."""
+    first = model = cwd = final = None
+    tok, ms, tools = {}, 0, 0
+    for line in open(path, errors="replace"):
+        try:
+            d = json.loads(line)
+        except ValueError:
+            continue
+        p = d.get("payload") or {}
+        t = p.get("type")
+        if d.get("type") == "session_meta":
+            cwd = p.get("cwd")
+        elif t == "thread_settings_applied":
+            model = p["thread_settings"].get("model")
+        elif t == "message" and p.get("role") == "user" and first is None:
+            text = (p.get("content") or [{}])[0].get("text", "")
+            if not text.startswith(("# AGENTS.md", "<")):
+                first = text
+        elif t in ("function_call", "custom_tool_call"):
+            tools += 1
+        elif t == "token_count" and p.get("info"):
+            tok = p["info"]["total_token_usage"]
+        elif t == "task_complete":
+            final, ms = p.get("last_agent_message") or "", ms + (p.get("duration_ms") or 0)
+    if not first:
+        return None
+    if first.startswith("Reply with the word ok"):
+        kind = "probe"
+    elif re.match(r"Review [0-9a-f]{7,}|Codex review · ", first):
+        kind = "review"
+    else:
+        return None
+    final = final or ""
+    try:
+        fs = json.loads(final)["findings"]
+        ok = not any(f["in_scope"] and f["severity"] in ("P0", "P1") for f in fs)
+        sev = " ".join(f"{s}:{sum(f['severity'] == s and f['in_scope'] for f in fs)}" for s in ("P0", "P1", "P2", "P3"))
+    except (ValueError, KeyError, TypeError):
+        ok = final.strip().rstrip(".") == "CLEAN"
+        sev = "untyped"
+    return {"kind": kind, "cwd": cwd or "", "model": model, "ok": ok, "sev": sev, "tools": tools, "min": ms / 60000,
+            "inp": tok.get("input_tokens", 0), "out": tok.get("output_tokens", 0), "ts": path.name[8:24]}
+
+
+def reviews(root, days, all_projects):
+    """codex-review runs in the window, grouped by worktree."""
+    since = datetime.now(timezone.utc) - timedelta(days=days)
+    runs = [r for p in sorted(codex_files(since)) if (r := review_run(p))]
+    if not all_projects:
+        runs = [r for r in runs if in_project(r["cwd"], root) or r["cwd"].startswith(root + "-worktrees/")]
+    rv = [r for r in runs if r["kind"] == "review"]
+    probes = [r for r in runs if r["kind"] == "probe"]
+    print(f"# codex-review runs, last {days:g} days: {len(rv)} rounds, {len(probes)} 'ok' probes "
+          f"({sum(r['inp'] for r in probes)/1e6:.1f}M input tokens)")
+    if not rv:
+        return
+    mins = sorted(r["min"] for r in rv)
+    print(f"passed {sum(r['ok'] for r in rv)}/{len(rv)}  models {dict(Counter(r['model'] for r in rv))}\n"
+          f"input {sum(r['inp'] for r in rv)/1e6:.0f}M  output {sum(r['out'] for r in rv)/1e6:.2f}M  "
+          f"minutes total {sum(mins):.0f} median {mins[len(mins)//2]:.1f} max {mins[-1]:.1f}")
+    groups = {}
+    for r in rv:
+        groups.setdefault(r["cwd"], []).append(r)
+    print("\n## Rounds per worktree (P0-P3 counts are in-scope findings; 'untyped' is the old free-text format)")
+    for cwd, rs in sorted(groups.items(), key=lambda x: -len(x[1])):
+        verdicts = " ".join("PASS" if r["ok"] else r["sev"] if r["sev"] != "untyped" else "fail" for r in rs)
+        print(f"{len(rs):3} rounds {sum(r['min'] for r in rs):5.0f}min {sum(r['inp'] for r in rs)/1e6:4.0f}M  "
+              f"{cwd.replace(str(Path.home()), '~')}\n      {verdicts}")
+    finding_classes(since)
+
+
+def finding_classes(since):
+    """In-scope findings per repo and class from the codex-review ledger, by week."""
+    path = Path.home() / ".agents" / "review-findings.jsonl"
+    if not path.exists():
+        return
+    rows = [json.loads(l) for l in path.read_text().splitlines() if l.strip()]
+    rows = [r for r in rows if r["in_scope"] and r["ts"] >= since.isoformat()]
+    print("\n## Finding classes per repo (in-scope; a class that keeps coming back after its fix landed is the finding)")
+    for repo in sorted({r["repo"] for r in rows}):
+        rs = [r for r in rows if r["repo"] == repo]
+        r1 = [r for r in rs if r["round"] == 1]
+        loops = len({r["slug"] for r in rs})
+        print(f"{repo}: {len(rs)} findings in {loops} reviews, {len(r1) / max(1, len({r['slug'] for r in r1})):.1f} per round 1")
+        for cls, n in Counter(r["class"] for r in rs).most_common(6):
+            prev = Counter(r["prevent"] for r in rs if r["class"] == cls).most_common(1)[0][0]
+            covered = sum(r["covered_by_guidance"] for r in rs if r["class"] == cls)
+            print(f"   {cls:20} {n:4}  in {len({r['slug'] for r in rs if r['class'] == cls})} reviews  "
+                  f"mostly {prev}" + (f"  ({covered} broke a written rule)" if covered else ""))
+
+
 def summarize(path, source):
     first, start, end, cwd, n_user, has_retro, n_err = None, None, None, None, 0, False, 0
     for kind, ts, d in events(path, source):
@@ -710,10 +816,13 @@ def main():
     ap.add_argument("--last-retro", action="store_true", help="previous retro's findings and their landing status")
     ap.add_argument("--ledger", action="store_true", help="other repos' findings checked against this repo")
     ap.add_argument("--record", metavar="FILE", help="upsert findings into the ledger")
+    ap.add_argument("--reviews", action="store_true", help="codex-review rounds, probes, models and verdicts (--days, default 7)")
     a = ap.parse_args()
     if a.digest:
         return digest(Path(a.digest))
     root = project_root(a.project)
+    if a.reviews:
+        return reviews(root, a.days or 7, a.all_projects)
     if a.record:
         return record(a.record, root)
     if a.ledger:
