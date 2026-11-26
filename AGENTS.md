@@ -6,7 +6,7 @@ This file is the one source for Claude and Codex. `~/.claude/CLAUDE.md` and `~/.
 
 - A scripted replace (`python3`, `sed`, `perl`) must assert its match count, so a stale match fails instead of exiting 0 with nothing changed.
 - The shell is zsh. Quote globs in arguments (`grep --include='*.ts'`), pass file lists as arrays (`files=(a b); cmd "${files[@]}"`), and don't start an `echo` argument with `=`.
-- zsh reads `$var:r`, `$var:h` and similar as modifiers. Write `${var}:` when a colon follows a variable.
+- zsh reads `$var:r`, `$var:h` and similar as modifiers. Write `${var}:` when a colon follows a variable. In Claude, a PreToolUse hook (`~/.claude/scripts/zsh-modifier-guard.py`) refuses a command that has one.
 - When you launch Chrome or Chrome for Testing directly (headless screenshots, scripts), pass `--use-mock-keychain --password-store=basic`. Without them, macOS shows Byron a keychain password prompt for "Chromium Safe Storage".
 - macOS has no GNU `timeout`. Use the tool call's own timeout, or `gtimeout` if it is installed.
 - `git cherry-pick` has no `-q` flag; with it, nothing is picked.
@@ -66,6 +66,21 @@ Name every thread so Byron can read its state and topic in the sidebar. Use this
 - In Claude Desktop, use `mcp__ccd_session_mgmt__set_session_title`. In Codex, use the thread rename tool.
 - For Codex orchestrator families, put these emojis after the family prefix: `⭐ 🧭 00 · 🔨✨ Planner rewrite`.
 
+## Running Codex from Claude
+
+- Use the `codex-review` skill (`~/.agents/skills/codex-review/`) for every Codex review. Its script pins the commit and the model (`gpt-6.2-sol`), closes stdin, and prints a severity table.
+- Before you open a PR that changes core logic (analysis, algorithms, merging or projecting data, concurrency, caching, or two code paths that must agree), run that review on each layer until a round passes (no in-scope P0 or P1), for at most 3 rounds. Then open the PR. If round 3 still has an in-scope P0 (exit 4), do not open the PR: stop and ask Byron for review. In the PR body, say which rounds ran, and list open and declined findings with a reason for each.
+- Before you write core-logic code, or brief a worker to, run `codex_review.py --repo "$PWD" --hazards` and use what it prints. When a review loop ends, run `--close <slug>` and add the checks, tests and standards it lists.
+- For any other `codex exec`, close stdin (`< /dev/null`). Without it, Codex waits forever.
+- If Codex fails with `model_not_found` or "Model metadata … not found", the CLI is too old: run `brew upgrade --cask codex`. Do not switch to another model to get around it.
+
+## Proving a change
+
+- Check a claim at the scope the product works on, not only on fixtures. If two code paths must give the same answer, compare them on every input the product accepts (every selectable expression, every file), and say how many you checked. A fixture-only check passed 243 of 243 while 145 of 6,032 real inputs still differed.
+- If two features must agree, derive one from the other. Do not copy one's rules into the other: each copy passes the tests you wrote and drifts on the inputs you didn't.
+- A test that pins one view's literal answer can hide a bug that the other view's answer would catch. Assert against the source of truth.
+- A backlog task's evidence names the command that recomputes its numbers. Its done condition names the check that proves it, at product scope.
+
 ## Codex task creation (Codex only)
 
 - Create project tasks in the saved project checkout using the local environment.
@@ -84,21 +99,6 @@ Name every thread so Byron can read its state and topic in the sidebar. Use this
   - Apply the title as soon as the task's real ID is available.
   - Number parallel workers by spawn order, not completion order.
 
-## Orchestration and workers (Codex only)
-
-- An orchestrator task name starts with `⭐ <family-icon> 00 ·`. Treat this
-  starred task name as the authoritative status at the start of every turn.
-- For nearly every user message in an orchestrator, spawn a new collaboration
-  subagent with empty context. Reuse an existing subagent only when its prior
-  context is materially useful for the next step.
-- Delegate substantive work by default, even when direct work would be faster.
-- Keep direct orchestrator work to coordination, synthesis, worker review,
-  small administrative actions, and urgent safety handling.
-- If no useful worker scope exists or subagents are unavailable, work directly.
-  State the applicable exception when no delegation occurs.
-- Prefer delegation even when it takes longer. Byron accepts the extra time and
-  expects the orchestrator to review work from smaller models.
-- A task that is not an orchestrator can work directly unless another rule
 ## Model choice for workers
 
 Pick the best-fit model for each subagent, worker session, or dedicated task. Do not give a worker the orchestrator's model by default. Use the smallest model that can do the work reliably.
@@ -122,6 +122,21 @@ Rules:
 - Move up one tier when a worker fails twice on the same step or reports that the task needs judgment. Do not start at the higher tier "to be safe".
 - Byron's explicit model choice always wins.
 
+## Orchestration and workers (Codex only)
+
+- An orchestrator task name starts with `⭐ <family-icon> 00 ·`. Treat this
+  starred task name as the authoritative status at the start of every turn.
+- For nearly every user message in an orchestrator, spawn a new collaboration
+  subagent with empty context. Reuse an existing subagent only when its prior
+  context is materially useful for the next step.
+- Delegate substantive work by default, even when direct work would be faster.
+- Keep direct orchestrator work to coordination, synthesis, worker review,
+  small administrative actions, and urgent safety handling.
+- If no useful worker scope exists or subagents are unavailable, work directly.
+  State the applicable exception when no delegation occurs.
+- Prefer delegation even when it takes longer. Byron accepts the extra time and
+  expects the orchestrator to review work from smaller models.
+- A task that is not an orchestrator can work directly unless another rule
   requires delegation.
 - Use the orchestrator to separate implementation, verification, and follow-up work so each worker receives only the context needed for its role. Route findings and revisions through the orchestrator.
 - Use collaboration subagents for bounded workers on the current task. This includes investigation, implementation, and verification.
