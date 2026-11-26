@@ -1,3 +1,4 @@
 .DS_Store
 .vscode
-synced__pycache__/
+synced
+__pycache__/
