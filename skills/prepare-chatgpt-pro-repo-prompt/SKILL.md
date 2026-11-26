@@ -34,6 +34,7 @@ Choose the mode from the request and the repository's research direction documen
 | **Strategy** | Positioning, comparisons with named products, ranked capability bets with reasoning | Where the product should go next |
 | **Review** | Ranked problems with evidence and fixes | Auditing existing code, docs, or UX |
 | **Evaluation loop** | Measured trials against an immutable baseline | Bounded optimization with metrics |
+| **Hands-on usability run** | Pro runs the app from source, drives it in a browser for 60–75 minutes, and returns a case ledger and one next PR | Use the `pro-usability-loop` skill instead of this one |
 
 The repository owner is the demand. In Design, Methods, and Strategy modes, Pro argues merit and designs well; it does not wait for proof that some third party asked. Prefer an ambitious, well-reasoned direction with a staged plan over the smallest safe change. "Keep current behavior" is a valid answer only when Pro shows the alternatives are worse, not because they are unproven.
 

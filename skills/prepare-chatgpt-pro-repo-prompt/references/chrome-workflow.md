@@ -39,6 +39,9 @@ Use `browser_batch` for each predictable run of steps (click, type, zoom).
 
 ### Check and collect
 
+- Collect the moment the run ends. A file link is tied to the message that created it and stops working within minutes: on 2026-11-24 every link returned `404 File not available` about 6 minutes after the final message, while the files still existed in Pro's sandbox. Check every 5 minutes near the expected end, download first, and always save the chat text, which never expires.
+- If the links already fail, ask Pro in the same chat to re-link the files in a new message, and download from that message at once. Don't ask it to redo the work.
+
 - The tab group from submission is usually gone by the next check. Call `navigate` with the URL and no `tabId`: it makes a new tab group. Close the tab with `tabs_close_mcp` when done.
 - Wait about 4 seconds, then take a screenshot. A square Stop button in the composer or progress lines ("Edited a file", "Read files") mean it is still running. Don't rely on DOM selectors such as `data-testid` or `data-message-author-role`; on 2026-10-28 they matched nothing.
 - When it is done, the answer ends with a table of files with **Download** links, an optional **Download ZIP**, and file cards. `find` "Download ZIP" returns a button ref; `left_click` on that ref saves the file to `~/Downloads` with no prompt. Wait for the file with a short bounded loop on `ls -t ~/Downloads`, then move it into `tmp/pro/<topic>/`.

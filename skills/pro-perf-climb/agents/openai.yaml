@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pro Perf Climb"
+  short_description: "Pro hill-climbs a performance metric in its sandbox"
+  default_prompt: "Use $pro-perf-climb to set up a ChatGPT Pro hill-climb on a performance metric for this repo."

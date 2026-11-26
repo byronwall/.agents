@@ -1,0 +1,4 @@
+interface:
+  display_name: "Pro Usability Loop"
+  short_description: "70-minute hands-on Pro evaluation runs and same-chat retests"
+  default_prompt: "Use $pro-usability-loop to set up a ChatGPT Pro hands-on evaluation of this repo, project, or feature, or to send the next retest in the same chat."

@@ -39,7 +39,7 @@ By mode:
 - Label facts, inferences, and proposals when it isn't obvious.
 - Say when evidence is missing or conflicting.
 
-Don't ask Pro to prove demand, run a usability study, or produce integrity receipts. Those don't improve the design.
+In a Design, Methods, or Strategy prompt, don't ask Pro to prove demand, run a usability study, or produce integrity receipts. Those don't improve the design. For a hands-on usability run, use the `pro-usability-loop` skill.
 
 ## 7. Scope and non-goals
 
