@@ -1,0 +1,4 @@
+interface:
+  display_name: "Token Burn"
+  short_description: "Find work worth spare usage on the strongest model"
+  default_prompt: "Use $token-burn to survey my recent repos and list the ideas that are worth spare usage on the strongest frontier model."
