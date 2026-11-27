@@ -42,6 +42,7 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-off
 code{font-family:var(--font-mono);font-size:.84em;background:var(--code-bg);padding:1px 5px;border-radius:4px;overflow-wrap:anywhere}
 code,pre,.mono,td.num,.srow .n{font-variant-ligatures:none;font-feature-settings:"liga" 0,"calt" 0}
 ul,ol{margin:0;padding-left:1.25em;display:grid;gap:5px}
+ul>li,ol>li{min-width:0} /* a long pre or code in a grid li would widen the page on a phone */
 .eyebrow{font-weight:600;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .muted{color:var(--muted)}
 .small{font-size:.86rem}
@@ -90,8 +91,8 @@ table.ba th:first-child{width:22%}
 .risk{font-size:.84rem}
 .risk.high{color:var(--gone);font-weight:600}
 .risk.medium{color:var(--warn)}
-.kind{font-weight:600;font-size:.84rem;white-space:nowrap}
-.kind.gap{color:var(--gone)} .kind.future{color:var(--accent)}
+.lk{font-weight:600;font-size:.84rem;white-space:nowrap}
+.lk.gap{color:var(--gone)} .lk.future{color:var(--accent)}
 
 /* Spine: one row per item; a row opens a popover over the content, so nothing below moves. */
 .spine{border:1px solid var(--rule);border-radius:10px;position:relative}
@@ -140,7 +141,7 @@ table.ba th:first-child{width:22%}
 .ln .tg{font-size:.92em;opacity:.8;margin-left:8px;white-space:nowrap}
 
 /* Figures: thumbnails are buttons that open the viewer. Diagrams keep a light panel in dark mode. */
-.figs{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(340px,100%),1fr));gap:16px}
 figure{margin:0;display:grid;gap:6px;min-width:0}
 figure button.pic{display:block;width:100%;background:var(--figure-bg);border:1px solid var(--rule);border-radius:10px;padding:8px;cursor:zoom-in;aspect-ratio:16/10;overflow:hidden;transition:border-color var(--fast)}
 @media (hover:hover){figure button.pic:hover{border-color:var(--accent)}}
@@ -149,6 +150,18 @@ figcaption{font-size:.86rem;color:var(--muted)}
 figcaption b{color:var(--ink);font-weight:600}
 figure button.pic{position:relative}
 .corner{position:absolute;top:8px;right:8px;z-index:1;font:700 .68rem/1 Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:#161d2b;background:#fff;border:1px solid #c9d2df;border-radius:5px;padding:4px 7px;pointer-events:none}
+/* Image kinds: every raster image says whether it is a mockup (drawn to show a direction) or built (a screenshot of running code).
+   Diagrams need no tag. The tag sits top left; .corner (Before/After) stays top right. */
+.kind{position:absolute;top:8px;left:8px;z-index:2;display:inline-flex;align-items:center;gap:5px;font:700 .68rem/1 Inter,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;border-radius:5px;padding:4px 7px;pointer-events:none}
+.kind svg{width:12px;height:12px}
+.kind-mockup{color:#6b4500;background:#ffe9a8;border:1px solid #d9a521}
+.kind-built{color:#fff;background:#161d2b;border:1px solid #161d2b}
+button.pic[data-kind="mockup"]{border:2px dashed #d9a521;background:#fffbea}
+button.pic[data-kind="mockup"]::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:repeating-linear-gradient(135deg,rgba(217,165,33,.10) 0 2px,transparent 2px 12px)}
+button.pic[data-kind="built"]{border:1px solid #161d2b}
+.kind-key{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:.9rem;color:var(--muted);margin-top:14px}
+.kind-key>span{display:inline-flex;align-items:center;gap:8px}
+.kind-key .kind{position:static}
 .pair{border:1px solid var(--rule);border-radius:12px;padding:14px;background:var(--panel)}
 .pair-head{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:12px;margin-bottom:10px}
 .pair-head .tag{font:800 .85rem/1 Inter,system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--ink)}
@@ -180,8 +193,8 @@ figure.wide img{height:auto;max-height:min(600px,88vh)}
 
 footer{margin-top:64px;color:var(--muted);font-size:.86rem;display:grid;gap:4px}
 
-/* Diagram viewer: full-screen pan/zoom carousel over every diagram on the page. */
-.viewer{position:fixed;inset:0;z-index:80;background:rgba(12,17,23,.97);display:grid;grid-template-rows:auto 1fr auto;color:#e9eef5}
+/* Image viewer: full-screen pan/zoom carousel over every diagram, mockup and screenshot on the page. */
+.viewer{position:fixed;inset:0;z-index:80;background:#0c1117;display:grid;grid-template-rows:auto 1fr auto;color:#e9eef5}
 .viewer[hidden]{display:none!important}
 .v-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:calc(10px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) 10px max(16px,env(safe-area-inset-left,0px))}
 .v-count{font-family:var(--font-mono);font-size:.82rem;color:#a9b4c4;font-variant-numeric:tabular-nums}
@@ -197,6 +210,8 @@ footer{margin-top:64px;color:var(--muted);font-size:.86rem;display:grid;gap:4px}
 .v-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:2;font-size:1.4rem!important;padding:10px 14px!important;background:rgba(20,26,36,.78)!important;border-color:rgba(255,255,255,.28)!important}
 .v-nav:hover{background:rgba(20,26,36,.92)!important}
 .v-prev{left:max(12px,env(safe-area-inset-left,0px))} .v-next{right:max(12px,env(safe-area-inset-right,0px))}
+.v-kind{position:absolute;top:10px;left:max(12px,env(safe-area-inset-left,0px));z-index:3}
+.v-stage.mockup{outline:3px dashed #d9a521;outline-offset:-3px}
 .v-help{font-size:.8rem;color:#a9b4c4;text-align:center;padding:8px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
 @media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -212,8 +227,14 @@ footer{margin-top:64px;color:var(--muted);font-size:.86rem;display:grid;gap:4px}
     <div>CI <b>green</b> on all 3</div>
     <div><b>−12.4k / +2.1k</b> product lines</div>
   </div>
+  <!-- Keep this key on any page with mockups or screenshots; delete it on a diagrams-only page. -->
+  <div class="kind-key"><span><span class="kind kind-mockup"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M11.3 1.7a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.6 13.4 2 14l.6-3.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Mockup</span> drawn to show a direction, not running code</span><span><span class="kind kind-built"><svg aria-hidden="true" viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="8.7" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 4l1-1.8h3L10.5 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Built</span> a screenshot of the running prototype</span></div>
   <p class="muted small prose">This page says where to look and why. Findings belong in a separate document.</p>
 </header>
+<!-- Image kinds. Copy a tag as the first child of its button.pic:
+  <figure><button class="pic" type="button" data-kind="mockup" data-title="Mockup K" data-caption="Bow tie, round 2"><span class="kind kind-mockup"><svg aria-hidden="true" viewBox="0 0 16 16"><path d="M11.3 1.7a1 1 0 0 1 1.4 0l1.6 1.6a1 1 0 0 1 0 1.4L5.6 13.4 2 14l.6-3.6z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Mockup</span><img src="m/k.jpg" alt="Mockup K"></button><figcaption><b>Mockup K · bow tie.</b> …</figcaption></figure>
+  <figure><button class="pic" type="button" data-kind="built" data-title="Calculation tab" data-caption="Northwind, Nov 26"><span class="kind kind-built"><svg aria-hidden="true" viewBox="0 0 16 16"><rect x="1.5" y="4" width="13" height="9.5" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.6"/><circle cx="8" cy="8.7" r="2.4" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5.5 4l1-1.8h3L10.5 4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg>Built</span><img src="s/tab.png" alt="Calculation tab"></button><figcaption><b>Built · Calculation tab.</b> … Northwind, Nov 26.</figcaption></figure>
+  A mockup beside what it became is a .pair whose header tags read Mockup and Built. -->
 
 <nav class="parts" aria-label="Parts">
   <a href="#part-overview"><span>1</span>Overview</a>
@@ -333,7 +354,7 @@ footer{margin-top:64px;color:var(--muted);font-size:.86rem;display:grid;gap:4px}
 <div class="pop" id="pop" hidden role="dialog" aria-label="Item detail" tabindex="-1"></div>
 <div class="hc" id="hc" hidden role="tooltip"></div>
 
-<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="Diagram viewer">
+<div class="viewer" id="viewer" hidden role="dialog" aria-modal="true" aria-label="Image viewer">
   <div class="v-bar">
     <span class="v-count" id="v-count"></span>
     <span class="v-title" id="v-title"></span>
@@ -346,9 +367,10 @@ footer{margin-top:64px;color:var(--muted);font-size:.86rem;display:grid;gap:4px}
     </div>
   </div>
   <div class="v-stage" id="v-stage">
-    <button type="button" class="v-nav v-prev" id="v-prev" aria-label="Previous diagram">‹</button>
+    <button type="button" class="v-nav v-prev" id="v-prev" aria-label="Previous image">‹</button>
+    <span class="kind v-kind" id="v-kind" hidden></span>
     <img id="v-img" alt="" draggable="false">
-    <button type="button" class="v-nav v-next" id="v-next" aria-label="Next diagram">›</button>
+    <button type="button" class="v-nav v-next" id="v-next" aria-label="Next image">›</button>
   </div>
   <div class="v-help">← → move between diagrams · drag to pan · scroll or pinch to zoom · double-click zooms in · 0 fits · Esc closes</div>
 </div>
@@ -439,7 +461,7 @@ document.getElementById("items").innerHTML=ITEMS.map((x,i)=>`<div class="isec" i
  (x.unproven.length?`<div><h4>Not proven</h4>${list(x.unproven)}</div>`:"")+`</div></div></div>`).join("");
 
 // What it leaves
-document.getElementById("left").innerHTML=LEFT.map(([k,t,refs,tr,next])=>`<tr><td>${esc(t)}</td><td><span class="kind ${k}">${k==="gap"?"Gap":"Future work"}</span></td><td style="white-space:nowrap">${refs.map(r=>refLink(r)).join(", ")}</td><td>${esc(tr)}</td><td>${esc(next)}</td></tr>`).join("");
+document.getElementById("left").innerHTML=LEFT.map(([k,t,refs,tr,next])=>`<tr><td>${esc(t)}</td><td><span class="lk ${k}">${k==="gap"?"Gap":"Future work"}</span></td><td style="white-space:nowrap">${refs.map(r=>refLink(r)).join(", ")}</td><td>${esc(tr)}</td><td>${esc(next)}</td></tr>`).join("");
 
 // Hover cards on any a[data-ref]
 const hc=document.getElementById("hc");let hcT=null,hcClose=null,hcFor=null;
@@ -465,7 +487,7 @@ function markPart(){const y=innerHeight*.35;let cur=parts[0];for(const p of part
  const on=navEl.querySelector("a.on");if(on&&on!==navOn){navOn=on;if(navEl.scrollWidth>navEl.clientWidth)navEl.scrollTo({left:on.offsetLeft-navEl.clientWidth/2+on.offsetWidth/2,behavior:"smooth"})}}
 addEventListener("scroll",markPart,{passive:true});markPart();
 
-/* ---------- Diagram viewer ----------
+/* ---------- Image viewer ----------
    Every button.pic on the page joins one carousel, in page order, deduped by image.
    Zoom resizes the image instead of CSS-scaling it, so SVG text stays sharp at any zoom. */
 (()=>{
@@ -473,7 +495,8 @@ addEventListener("scroll",markPart,{passive:true});markPart();
  const countEl=document.getElementById("v-count"),titleEl=document.getElementById("v-title");
  const btns=[...document.querySelectorAll("button.pic")],items=[],seen=new Map();
  btns.forEach(b=>{const src=b.querySelector("img")?.getAttribute("src");if(!src)return;
-  if(!seen.has(src)){seen.set(src,items.length);const t=b.dataset.title||b.querySelector("img").alt||"",c=b.dataset.caption||"";items.push({src,title:c?`${t} · ${c}`:t})}
+  if(!seen.has(src)){seen.set(src,items.length);const t=b.dataset.title||b.querySelector("img").alt||"",c=b.dataset.caption||"",k=b.dataset.kind||"diagram",
+   kl=k==="mockup"?"Mockup":k==="built"?"Built":"";items.push({src,kind:k,tag:b.querySelector(".kind")?.innerHTML||"",title:[kl,t,c].filter(Boolean).join(" · ")})}
   b.addEventListener("click",()=>open(seen.get(src)))});
  let i=0,s=1,x=0,y=0,fitS=1,nw=1,nh=1,last=null;
  const apply=()=>{img.style.width=nw*s+"px";img.style.height=nh*s+"px";img.style.transform=`translate(${x}px,${y}px)`};
@@ -481,7 +504,10 @@ addEventListener("scroll",markPart,{passive:true});markPart();
   fitS=Math.min((r.width-96)/nw,(r.height-24)/nh,2);s=fitS;x=(r.width-nw*s)/2;y=(r.height-nh*s)/2;apply()};
  const zoomAt=(f,cx,cy)=>{const ns=Math.min(Math.max(s*f,fitS*.5,.05),12);x=cx-(cx-x)*(ns/s);y=cy-(cy-y)*(ns/s);s=ns;apply()};
  const center=()=>{const r=stage.getBoundingClientRect();return[r.width/2,r.height/2]};
+ const kindEl=document.getElementById("v-kind");
  const show=n=>{i=(n+items.length)%items.length;countEl.textContent=`${i+1} / ${items.length}`;titleEl.textContent=items[i].title;
+  const k=items[i].kind;stage.classList.toggle("mockup",k==="mockup");kindEl.hidden=!(k==="mockup"||k==="built");
+  kindEl.className=`kind v-kind kind-${k}`;kindEl.innerHTML=items[i].tag;
   img.onload=fit;img.src=items[i].src;img.alt=items[i].title;if(img.complete&&img.naturalWidth)fit()};
  const open=n=>{last=document.activeElement;V.hidden=false;document.body.style.overflow="hidden";hc.hidden=true;show(n||0);document.getElementById("v-close").focus()};
  const close=()=>{V.hidden=true;document.body.style.overflow="";last?.focus?.()};
@@ -510,6 +536,6 @@ addEventListener("scroll",markPart,{passive:true});markPart();
 })();
 
 // Deep link: #item-B opens that item's popover
-function fromHash(){const m=/^#item-(.+)$/.exec(location.hash);if(m&&byRef[m[1]]){document.getElementById("part-overview").scrollIntoView();setTimeout(()=>{openRef=null;togglePop(m[1],true)},50)}}
+function fromHash(){const m=/^#item-(.+)$/.exec(location.hash);if(m&&byRef[m[1]]){(document.getElementById("spine")?.closest(".part")||document.getElementById("part-overview"))?.scrollIntoView();setTimeout(()=>{openRef=null;togglePop(m[1],true)},50)}}
 addEventListener("hashchange",fromHash);fromHash();
 </script>

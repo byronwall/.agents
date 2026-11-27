@@ -52,3 +52,19 @@ Artifact `GwBNQTkyagFDoeu9dLnSvS`, with a sibling page on the live-query prototy
 - November 5, 2026 (map zoom): "when you zoom in really tight, the text is blurry, almost like it's an image… I really, really don't like the blurry text when I'm zoomed in." The template's viewer resizes the image rather than CSS-scaling it for this reason.
 - November 19, 2026 (plan viewer images): an inline image is never taller than about 90% of the viewport; the full image is one click away.
 - October 26, 2026: artifacts hold no unique facts. Durable findings go to PR bodies, the repository or the planning task, and the artifact links to them.
+
+## Wave 4 prototype handoff pages (TASK-0202, November 27, 2026)
+
+Artifacts `NzDdGAD1AxRiU6kjbfjh82` (calculation tree), `UUw2CL3HtCrZppw5ceuUJh` (agent-built dashboards) and `J54osNpoSJ25g316zWJYE6` (instance views), one subagent per page from the same brief. Byron: "all of these artifacts are actually quite nice." One round after the first publish.
+
+- Mockups vs real: "make it abundantly clear when an image is a mock-up versus a real image… Icon in the corner, a thin yellow overlay or something… Since the mock-ups are so close to reality, it becomes very confusing." Fixed with `data-kind`, an amber pencil tag, dashed frame and hatch for mockups, a dark camera tag for built screenshots, the kind in the viewer title, and a key under the facts row.
+- Scope: "questions around how much of the proposed scope got implemented versus what's left." "What it leaves behind" alone didn't answer it; each page gained a Planned vs built table with a computed count line, tied row by row to the leftovers.
+- Then a 10x pass on each. All three builders independently moved the built evidence ahead of the origin story and the milestone spine.
+
+Agent-side lessons from the same session:
+
+- The template's `.kind` class (Gap and Future work labels) collided with the new image-kind tag; it is `.lk` now.
+- `ul,ol{display:grid}` let a long command in a list item widen the page to 2,039px at 375px; `li{min-width:0}` fixed it.
+- The viewer backdrop at 0.97 alpha let light thumbnails show through on a phone; it is opaque now.
+- All three builders wrote their own assemble-and-check script on round two. `template/check.py` now does the shared part.
+- Two builders found their task's planning notes out of date against the branch (a start command, a storage claim); check status against code, not only the PR body.
