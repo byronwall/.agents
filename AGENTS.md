@@ -285,3 +285,27 @@ Use an exception only when all these conditions are true:
 - Clear voice evidence supports the specific deviation.
 
 The skill does not permit a deviation by itself. Follow the global guidance when evidence does not support the deviation.
+
+## Explaining complicated work
+
+When you explain or propose complicated work, start with a short Problem / Solution / First step summary. Use it in replies, plans, task summaries, and PR descriptions for core changes. Put details after it, not before.
+
+- **Problem:** Say what is wrong and why it happens (the mechanism, not the symptom). Give one or two real numbers for how large it is. Say who it hurts and how.
+- **Solution:** Say what does the job instead, and why it can (what it already knows or has). Say what stays the same, so the reader sees the blast radius. Say what happens when the new part fails or is missing.
+- **First step:** Name the cheapest step that proves or kills the idea before anything is built.
+
+Rules:
+
+- Keep each part to one short paragraph of 2-3 sentences. The whole summary fits on one screen.
+- Use the bold labels exactly. Do not add more labels.
+- Use the names the code and UI use. Define a term in a few words the first time, or leave it out.
+- Use measured numbers only. If a number is an estimate, say "up to" or "about". If you have none, leave it out.
+- Do not list options you will not pursue. Do not hedge.
+
+Example:
+
+> **Problem:** `srcly refs` misses callers, because it guesses which declaration a name points to by matching text. In srcly, about 8,100 references are guessed and up to 40,000 member calls are not resolved. An agent that checks callers before it deletes code can miss some of them.
+>
+> **Solution:** The TypeScript checker, which already knows what each name binds to, does that job instead. The ids stay the same, so links and the Imports graph do not change. If Node or the engine is missing, srcly uses today's index.
+>
+> **First step:** Measure whether the checker's walk is fast and small enough on a big repo before anything is built.
