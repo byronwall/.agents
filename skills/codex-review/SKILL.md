@@ -32,14 +32,14 @@ Severity: P0 is data loss, a security hole or a crash in normal use. P1 is a wro
 ## Act on the findings
 
 - Fix every in-scope P0 and P1. Reproduce or reason through each one first.
-- P2 and P3: fix the ones that are cheap. List the rest in the PR body with a one-line reason. They do not need another round.
+- P2 and P3: fix the ones that are cheap. List the rest under `## Open findings`. They do not need another round.
 - `base` findings were already on the main branch. Do not fix them in this PR. Tell Byron about a serious one.
 - When several findings share one cause, fix the cause. Codex found five drifting copies of the same stop rules before the real fix (one source of truth) closed them all.
 - Only when a round fails: commit, then re-run with `--round <N+1> --follow-up <previous verdict file>` on the new SHA.
 - Stop after round 3. The script refuses round 4. Round 3 also returns an architecture note: a design change that would prevent the kind of findings the rounds kept finding. Put it in the PR body, and tell Byron about it if it is worth a follow-up.
 - **Round 3 with an in-scope P0 (exit 4): stop.** A P0 after 3 rounds means the fixes keep missing or the design is wrong. Do not open the PR or the next layer, and do not try another fix. Push the branch, then send Byron the verdict, the architecture note, and one line per P0 on what each round tried. Wait for his call.
-- **Round 3 with only P1s (exit 3):** open the PR. List each open P1 in the PR body, and add it as an open work step in the planning task, so it is not lost after merge.
-- In the PR body, say which rounds ran and what they changed. List open and declined findings with their severity and a reason.
+- **Round 3 with only P1s (exit 3):** open the PR with each open P1 under `## Open findings`.
+- In the PR body, say which rounds ran and what they changed. List open, declined and serious `base` findings under `## Open findings`, in the shape that `pr-description` gives.
 
 ## Feed findings back into guidance
 

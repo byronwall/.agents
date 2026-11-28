@@ -35,7 +35,7 @@ Keep repository rules on top of this skill. If a repository requires a line, suc
 - Do not list files or walk through the diff. GitHub shows the diff.
 - Use the words the user sees in the product, such as button labels and page names.
 - Keep it short. If a section does not help the merge decision, remove it.
-- Tell the bad news. State limits, skipped checks, and known defects in `Limits`.
+- Tell the bad news. State limits and skipped checks in `Limits`. List unfixed defects and review findings in `Open findings`.
 - Follow the prose rules in the global instructions.
 
 ## Proof
@@ -87,6 +87,10 @@ Replace each `<...>` note. Keep the section names, so that all of Byron's PRs re
 ## Limits
 
 - <Optional. What this does not do yet.>
+
+## Open findings
+
+- <Optional. One line for each unfixed finding, in the shape under "Open findings".>
 ```
 
 ### Fix
@@ -112,6 +116,10 @@ Replace each `<...>` note. Keep the section names, so that all of Byron's PRs re
 ## Limits
 
 - <Optional. Related cases that this does not fix.>
+
+## Open findings
+
+- <Optional. One line for each unfixed finding, in the shape under "Open findings".>
 ```
 
 ### Dev
@@ -132,6 +140,10 @@ Replace each `<...>` note. Keep the section names, so that all of Byron's PRs re
 ## Limits
 
 - <Optional. Risks, follow-up, or migration steps.>
+
+## Open findings
+
+- <Optional. One line for each unfixed finding, in the shape under "Open findings".>
 ```
 
 ### Docs
@@ -148,7 +160,23 @@ Docs PRs do not need screenshots. The proof is where the content came from.
 ## Proof
 
 <How this is grounded: the code, runs, or sources that it uses, and what is verified or speculative.>
+
+## Open findings
+
+- <Optional. One line for each unfixed finding, in the shape under "Open findings".>
 ```
+
+## Open findings
+
+A daily sweep files this section as GitHub issues after the PR merges. Use one bullet for each finding that the merged code still has:
+
+```markdown
+- P1 · diff · apps/app/src/explore.ts:74 — A query with zero rows after its filters saves without the Rows table. Open: needs compile against declared fields.
+```
+
+- The fields are severity, `diff` (new in this PR) or `base` (already on main), `file:line`, what goes wrong, then the state with a reason.
+- The state is `Open`, `Declined`, or `Pre-existing`.
+- Do not list a fixed finding here.
 
 ## Stacks
 

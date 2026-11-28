@@ -253,7 +253,7 @@ def main() -> int:
         print("Pin --rev to a SHA (git rev-parse --short HEAD): HEAD moves while you fix.", file=sys.stderr)
         return 2
     if not 1 <= args.round <= MAX_ROUNDS:
-        print(f"Codex reviews stop at round {MAX_ROUNDS}. Open the PR and list the open findings under Limits.", file=sys.stderr)
+        print(f"Codex reviews stop at round {MAX_ROUNDS}. Open the PR and list the open findings under ## Open findings.", file=sys.stderr)
         return 2
 
     slug = re.sub(r"^codex-focus-", "", Path(args.focus).stem)
