@@ -57,6 +57,7 @@ A session that is mid-turn queues the message. Auto mode blocks `stop_session` o
 - A test run is one row. The row holds the root runner and all of its descendants, so one kill stops all of them.
 - GROWING means 200 MB a minute or more over the 6-second sample. One sample is noisy, so a row can read flat a minute later.
 - A session is idle when its transcript's last conversation entry ends a turn, or when the transcript has not changed for 15 minutes. If the state is unknown, the session counts as running.
+- A process belongs to a session only when its environment carries that session's `CLAUDE_CODE_HOST_SESSION_ID`. Every child of a Desktop session inherits it. Without it, `free.py` names the session whose folder the process runs in (it stops at the repo root) and names no session to tell. Editors and Codex also run in session folders, so a folder match is not an owner.
 - `free.py` tags Codex work by its folder and process names. It cannot tell if a Codex run is active, so Codex rows stay in ASK.
 
 If you change a rule, change it in `free.py`, then update this table.
