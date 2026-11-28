@@ -112,6 +112,20 @@ def cwds(pids):
     return found
 
 
+HOST_ID = re.compile(r"\bCLAUDE_CODE_HOST_SESSION_ID=(local_[\w-]+)")
+
+
+def host_ids(pids):
+    """The Desktop session each pid inherited from its environment. Reads only that variable."""
+    out = run("ps", "eww", "-o", "pid=,command=", "-p", ",".join(map(str, sorted(pids))))
+    found = {}
+    for line in out.splitlines():
+        m = HOST_ID.search(line)
+        if m:
+            found[int(line.split(None, 1)[0])] = m[1]
+    return found
+
+
 def listeners():
     out = run("lsof", "-b", "-w", "-nP", "-iTCP", "-sTCP:LISTEN", "-Fp")
     return {int(x[1:]) for x in out.splitlines() if x[:1] == "p"}
@@ -158,10 +172,13 @@ def is_idle(s):
 
 
 def session_for(cwd, by_cwd):
-    """The sessions at cwd or the nearest parent folder (a dev server runs in app/)."""
+    """The sessions at cwd or a parent folder (a dev server runs in app/), up to the repo root.
+    A guess: other tools (editors, Codex) also run in a session's folder."""
     while cwd and cwd != "/":
         if cwd in by_cwd:
             return by_cwd[cwd]
+        if os.path.exists(os.path.join(cwd, ".git")):
+            break
         cwd = os.path.dirname(cwd)
     return []
 
@@ -193,22 +210,24 @@ def label(p):
     return " ".join(os.path.basename(x) for x in p["cmd"].split()[:2])[:40]
 
 
-def owner(pid, table, cwd_of, by_cwd):
-    """Returns (text, state, session id). State is idle, running, codex or none."""
+def owner(pid, table, cwd_of, by_cwd, host_of, by_id):
+    """Returns (text, state, session id). State is idle, running, codex or none.
+    The session id is set only when the process env names it, so only real owners get told."""
     links = list(chain(pid, table))
     cmds = [table[x]["cmd"] for x in links]
     cwd = cwd_of.get(pid, "")
-    claude = next((x for x in links if CLAUDE_CLI.search(table[x]["cmd"])), None)
-    sessions = session_for(cwd_of.get(claude, "") if claude else cwd, by_cwd)
-    if sessions:
-        sessions.sort(key=lambda s: s.get("lastActivityAt", 0), reverse=True)
-        idle = all(is_idle(s) for s in sessions)
-        s = sessions[0]
-        state = "idle" if idle else "running"
-        title = (s.get("title") or "untitled")[:44]
-        return f'{state} session "{title}"', state, s["sessionId"]
+    s = by_id.get(host_of.get(pid))
+    if s:
+        state = "idle" if is_idle(s) else "running"
+        return f'{state} session "{(s.get("title") or "untitled")[:44]}"', state, s["sessionId"]
     if "/.codex/" in cwd or any("/.codex/" in c or "codex" in os.path.basename(c.split()[0]).lower() for c in cmds):
         return "Codex: " + (cwd.replace(os.path.expanduser("~"), "~") or "unknown folder"), "codex", None
+    sessions = session_for(cwd, by_cwd)
+    if sessions:
+        idle = all(is_idle(s) for s in sessions)
+        state = "idle" if idle else "running"
+        titles = ", ".join(f'"{(s.get("title") or "untitled")[:30]}"' for s in sessions[:2])
+        return f"not a session's process; runs in the folder of {state} session {titles}", state, None
     parents = " < ".join(os.path.basename(table[x]["cmd"].split()[0]) for x in links[1:3])
     return f"no session; parent {parents or 'launchd'}", "none", None
 
@@ -224,6 +243,9 @@ def classify(table, sizes, by_cwd, keep_docker):
         if hits:
             roots[p] = hits[-1]
     cwd_of = cwds(set(big) | claudes | set(roots.values()))
+    host_of = host_ids(set(big) | set(roots.values()))
+    by_id = {s["sessionId"]: s for ss in by_cwd.values() for s in ss}
+    own = lambda pid: owner(pid, table, cwd_of, by_cwd, host_of, by_id)
     ports = listeners()
 
     docker_up = any(DOCKER_VM in p["cmd"] for p in table.values())
@@ -238,7 +260,7 @@ def classify(table, sizes, by_cwd, keep_docker):
             apps[m[1]] = apps.get(m[1], 0) + sizes[pid][0]
 
     def add(tier, kind, pids, name, why, root):
-        text, state, sid = owner(root, table, cwd_of, by_cwd)
+        text, state, sid = own(root)
         items.append({"tier": tier, "kind": kind, "pids": pids, "name": name, "why": why,
                       "owner": text, "state": state, "session": sid, "cmd": None,
                       "mem": sum(sizes.get(x, (0, 0))[0] for x in pids)})
@@ -248,7 +270,7 @@ def classify(table, sizes, by_cwd, keep_docker):
             continue
         p = table[pid]
         cmd = p["cmd"]
-        state = owner(pid, table, cwd_of, by_cwd)[1]
+        state = own(pid)[1]
         if DOCKER_VM in cmd:
             tier = "keep" if keep_docker else "ask" if containers else "safe"
             add(tier, "docker", [pid], "Docker VM", f"containers: {containers or 'none'}", pid)
